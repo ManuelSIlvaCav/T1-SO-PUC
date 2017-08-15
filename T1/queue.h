@@ -12,3 +12,6 @@ Queue* initQueue(int cap);
 
 void insert(Queue *queue, Process * proc);
 
+void heapify(Queue*queue, int index );
+
+Process*ExtractMax(Queue*queue);

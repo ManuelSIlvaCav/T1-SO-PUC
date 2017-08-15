@@ -11,3 +11,5 @@ typedef struct process Process;
 
 
 Process *initProc(int id, char* name, int priority, int status);
+
+Process*ExtractMin();

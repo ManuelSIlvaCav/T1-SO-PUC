@@ -13,11 +13,18 @@ int main() {
   insert(q, c);
   insert(q, d);
 
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < q->size; i++) {
     Process * current = q->data[i];
     printf("p:%d ID: %d\n", current->priority, current->PID);
   }
 
+  Process* prueba = ExtractMax(q);
+  printf("jdkasdjaksdj \n" );
+  
+  for (int i = 0; i < q->size; i++) {
+    Process * current = q->data[i];
+    printf("p:%d ID: %d\n", current->priority, current->PID);
+  }
 
   return 0;
 }
