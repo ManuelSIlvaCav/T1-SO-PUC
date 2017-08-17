@@ -6,10 +6,11 @@ struct process{
   int priority;
   int status;
   int* array;
+  int tiempos;
 };
 typedef struct process Process;
 
 
-Process *initProc(int id, char* name, int priority, int status);
+Process *initProc(int id, char* name, int priority, int status, int tiempos, int*lista_tiempos);
 
 Process*ExtractMin();
