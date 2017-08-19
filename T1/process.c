@@ -20,5 +20,7 @@ Process *initProc(int id, char* name, int priority, int tiempo_inicio, int statu
 
 void actualizar_proceso(int tiempo_actual, Process*proc){
   proc->tiempo_termino_ejecucion = proc->tiempo_inicio + proc->array[proc->indice_arreglo_actual];
+  //estado Running = 1
   proc->status = 1;
+  printf(" TERMINA: %d\n", proc->tiempo_termino_ejecucion);
 }

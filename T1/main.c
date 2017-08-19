@@ -55,20 +55,18 @@ int main(int argc, char * argv[]) {
       //si el SO esta desocupado empezar a ejecutar
       if (q->estado_SO==0){
         Process*Ejecutado = GetNext(q, i);
-        if (Ejecutado == NULL) printf("IDLE\n");
+        if (Ejecutado == NULL);
         else {
-            printf("GetNext\n");
+
+            actualizar_proceso(i, Ejecutado);
         }
-        //printf("%d\n", Ejecutado->indice_arreglo_actual);
-        //actualizar_proceso(i, Ejecutado);
       }
       //Revisar procesos waiting - Ready
+      LiberarWaiting(q, i);
 
 
       //chquear el termino del proceso actual - liberar SO
-      //EndProc(q, i);
-
-
+      if (q->estado_SO == 1) EndProc(q, i);
       i++;
       if (i==10000) break;
     }

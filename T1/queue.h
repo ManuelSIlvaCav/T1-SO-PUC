@@ -19,5 +19,5 @@ void heapify(Queue*queue, int index );
 Process*GetNext(Queue*queue, int tiempo);
 Process*ExtractMax(Queue*queue);
 
-void LiberarWaiting(Queue*queue);
+void LiberarWaiting(Queue*queue, int tiempo_actual);
 void EndProc(Queue*queue, int tiempo_actual);

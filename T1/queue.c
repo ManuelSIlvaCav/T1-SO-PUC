@@ -107,7 +107,7 @@ Process*GetNext(Queue*queue, int tiempo_actual){
   for (int i =0; i < queue->size; i++){
 
     if (queue->data[i]->status == 0 && queue->data[i]->tiempo_inicio <= tiempo_actual){
-      printf("CONSEGUI NEXT %d\n", tiempo_actual);
+      printf("CONSEGUI NEXT %d Proceso: %d ", tiempo_actual, i);
       queue->estado_SO = 1;
       queue->proc_actual = queue->data[i];
       return queue->data[i];
@@ -117,15 +117,27 @@ Process*GetNext(Queue*queue, int tiempo_actual){
   return NULL;
 }
 
-void LiberarWaiting(Queue*queue){
-
+void LiberarWaiting(Queue*queue, int tiempo_actual){
+  for (int i = 0; i < queue->size; i++){
+    if (queue->data[i]->status == 2 && queue->data[i]->tiempo_inicio >= tiempo_actual){
+      queue->data[i]->status = 0;
+    }
+  }
 }
 
 void EndProc(Queue*queue, int tiempo_actual){
   //SI el proceso siendo ejecutado termino su ejecucion
-  if (queue->proc_actual->tiempo_termino_ejecucion >= tiempo_actual){
+  if (queue->proc_actual->tiempo_termino_ejecucion <= tiempo_actual){
+
+    //estado Waiting = 2
     queue->proc_actual->status = 2;
-    queue->proc_actual->tiempo_inicio += queue->proc_actual->array[queue->proc_actual->indice_arreglo_actual+1];
-    queue->proc_actual->indice_arreglo_actual += 1;
+    //proximo inicio -> Termino + Bi
+    queue->proc_actual->tiempo_inicio = queue->proc_actual->array[queue->proc_actual->indice_arreglo_actual+1] + queue->proc_actual->tiempo_termino_ejecucion;
+    queue->proc_actual->indice_arreglo_actual += 2;
+
+    //Si me paso del numero de tiempos- Mato el proceso
+    if (queue->proc_actual->tiempos < queue->proc_actual->indice_arreglo_actual) queue->proc_actual->status=3;
+    queue->estado_SO = 0;
+    printf("TERMINE ACTUAL en %d proceso: %d proximo:%d\n", tiempo_actual, queue->proc_actual->PID, queue->proc_actual->tiempo_inicio);
   }
 }
