@@ -18,3 +18,6 @@ void insert_base_pid(Queue *queue, Process * proc);
 void heapify(Queue*queue, int index );
 Process*GetNext(Queue*queue, int tiempo);
 Process*ExtractMax(Queue*queue);
+
+void LiberarWaiting(Queue*queue);
+void EndProc(Queue*queue, int tiempo_actual);

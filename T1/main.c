@@ -28,14 +28,14 @@ int main(int argc, char * argv[]) {
     /*Codigo para lectura de archivos */
     while(fscanf(fr, "%s", nombre) != EOF){
       fscanf(fr, "%d %d %d", &prioridad, &tiempo_inicio, &largo_tiempos);
-      //printf("Printeando %s, %d, %d, %d fin\n", nombre, prioridad, tiempo_inicio, largo_tiempos);
+      printf("Printeando %s, %d, %d, %d fin\n", nombre, prioridad, tiempo_inicio, largo_tiempos);
       int lista_tiempo[largo_tiempos*2-1];
       for (int i=0; i< largo_tiempos*2-1; i++){
         fscanf(fr, "%d\n", &lista_tiempo[i]);
-        //printf("%d\n", lista_tiempo[i]);
+
       }
       Process*proc = initProc(PID, nombre, prioridad, tiempo_inicio, 0, largo_tiempos, lista_tiempo);
-
+      //printf("p:%d ID: %d, da %s anterior\n", proc->priority, proc->PID, proc->name);
       //insert especial que inserta en base al id y no prioridad -- SE VAN CREANDO CON ID DECRECIENTES
       insert_base_pid(q, proc);
 
@@ -47,18 +47,26 @@ int main(int argc, char * argv[]) {
 
     for (int i = 0; i < q->size; i++) {
       Process * current = q->data[i];
-      printf("p:%d ID: %d\n", current->priority, current->PID);
+      printf("p:%d ID: %d, da %s %d %d\n", current->priority, current->PID, current->name, current->tiempo_inicio, current->tiempos);
+      for (int indice = 0; indice<current->tiempos*2-1; indice++) printf("%d dasd\n", current->array[indice]);
     }
 
     while(1){
       //si el SO esta desocupado empezar a ejecutar
       if (q->estado_SO==0){
-        
-
+        Process*Ejecutado = GetNext(q, i);
+        if (Ejecutado == NULL) printf("IDLE\n");
+        else {
+            printf("GetNext\n");
+        }
+        //printf("%d\n", Ejecutado->indice_arreglo_actual);
+        //actualizar_proceso(i, Ejecutado);
       }
-      //chquear el termino del proceso actual - liberar SO
+      //Revisar procesos waiting - Ready
 
-      //
+
+      //chquear el termino del proceso actual - liberar SO
+      //EndProc(q, i);
 
 
       i++;

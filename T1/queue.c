@@ -105,9 +105,27 @@ void decreaseKey(Queue*queue, int index, int value){
 
 Process*GetNext(Queue*queue, int tiempo_actual){
   for (int i =0; i < queue->size; i++){
+
     if (queue->data[i]->status == 0 && queue->data[i]->tiempo_inicio <= tiempo_actual){
+      printf("CONSEGUI NEXT %d\n", tiempo_actual);
+      queue->estado_SO = 1;
+      queue->proc_actual = queue->data[i];
       return queue->data[i];
     }
 
+  }
+  return NULL;
+}
+
+void LiberarWaiting(Queue*queue){
+
+}
+
+void EndProc(Queue*queue, int tiempo_actual){
+  //SI el proceso siendo ejecutado termino su ejecucion
+  if (queue->proc_actual->tiempo_termino_ejecucion >= tiempo_actual){
+    queue->proc_actual->status = 2;
+    queue->proc_actual->tiempo_inicio += queue->proc_actual->array[queue->proc_actual->indice_arreglo_actual+1];
+    queue->proc_actual->indice_arreglo_actual += 1;
   }
 }
