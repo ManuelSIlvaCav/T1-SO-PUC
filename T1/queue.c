@@ -5,6 +5,7 @@ Queue* initQueue(int cap) {
   Queue *new = calloc(1, sizeof(Queue));
   new->cap = cap;
   new->size = 0;
+  new->estado_SO = 0;
   new->data = calloc(cap, sizeof(Process*));
   for (int i = 0; i < cap; i++) {
     new->data[i] = calloc(1, sizeof(Process));
@@ -99,5 +100,14 @@ void decreaseKey(Queue*queue, int index, int value){
   while (index!= 0 && queue->data[parent(index)] > queue->data[index]){
     swap(queue, index, parent(index));
     index = parent(index);
+  }
+}
+
+Process*GetNext(Queue*queue, int tiempo_actual){
+  for (int i =0; i < queue->size; i++){
+    if (queue->data[i]->status == 0 && queue->data[i]->tiempo_inicio <= tiempo_actual){
+      return queue->data[i];
+    }
+
   }
 }

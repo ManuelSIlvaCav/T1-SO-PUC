@@ -8,10 +8,13 @@ struct process{
   int status;
   int* array;
   int tiempos;
+  int tiempo_inicio;
+  int indice_arreglo_actual;
+
 };
 typedef struct process Process;
 
 
-Process *initProc(int id, char* name, int priority, int status, int tiempos, int*lista_tiempos);
+Process *initProc(int id, char* name, int priority, int tiempo_inicio, int status, int tiempos, int*lista_tiempos);
 
 Process*ExtractMin();
