@@ -4,6 +4,7 @@ struct process{
   int PID;
   char* name;
   int priority;
+  // 0- Ready, 1-Running 2-waiting
   int status;
   int* array;
   int tiempos;

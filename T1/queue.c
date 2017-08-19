@@ -46,6 +46,23 @@ void insert(Queue *queue, Process * proc) {
 
 }
 
+void insert_base_pid(Queue *queue, Process * proc) {
+  queue->size += 1;
+  int i = queue->size - 1;
+  queue->data[i] = proc;
+
+
+
+  while(i != 0 && queue->data[parent(i)]->PID < queue->data[i]->PID) {
+    printf("%d %d \n", parent(i), i);
+    swap(queue, i, parent(i));
+    i = parent(i);
+  }
+
+
+}
+
+
 void heapify(Queue*queue, int index){
   int l = left(index);
   int r = right(index);
