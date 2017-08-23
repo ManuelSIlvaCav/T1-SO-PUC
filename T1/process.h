@@ -1,22 +1,35 @@
 #include <stdlib.h>
 
+/*
+0: READY,
+1: RUNNING,
+2: WAITING,
+3: TERMINATED,
+*/
+
 struct process{
   int PID;
   char* name;
   int priority;
-  // 0- Ready, 1-Running 2-waiting
   int status;
-  int *array;
-  int tiempos;
-  int tiempo_inicio;
-  int indice_arreglo_actual;
-  int tiempo_termino_ejecucion;
+
+  int *intervals;
+  int interval_size;
+  int interval_index;
+
+  // int tiempos;
+  // int tiempo_inicio;
+  // int indice_arreglo_actual;
+
+  // åint start_time;
+  int awake_time;
+  int sleep_time;
 
 };
 typedef struct process Process;
 
 
-Process *initProc(int id, char* name, int priority, int tiempo_inicio, int status, int tiempos, int* lista_tiempos);
+Process *initProc(int id, char* name, int priority, int start_time, int intervals, int* lista_tiempos);
 
 Process*ExtractMin();
 

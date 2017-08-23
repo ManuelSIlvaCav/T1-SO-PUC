@@ -36,8 +36,6 @@ void insert(Queue *queue, Process * proc) {
   int i = queue->size - 1;
   queue->data[i] = proc;
 
-
-
   while(i != 0 && queue->data[parent(i)]->priority < queue->data[i]->priority) {
     printf("%d %d \n", parent(i), i);
     swap(queue, i, parent(i));
@@ -82,7 +80,9 @@ void heapify(Queue*queue, int index){
 
 }
 
-Process*ExtractMax(Queue*queue){
+Process *extractMax(Queue*queue){
+  if (queue->size == 0) return NULL;
+  
   if (queue->size == 1){
     queue->size --;
     return queue->data[0];
@@ -103,6 +103,7 @@ void decreaseKey(Queue*queue, int index, int value){
   }
 }
 
+/*
 Process*GetNext(Queue*queue, int tiempo_actual){
   for (int i =0; i < queue->size; i++){
 
@@ -116,11 +117,16 @@ Process*GetNext(Queue*queue, int tiempo_actual){
   }
   return NULL;
 }
-
+*/
 void LiberarWaiting(Queue*queue){
 
 }
 
+int isEmpty(Queue *queue) {
+  return queue->size == 0;
+}
+
+/*
 void EndProc(Queue*queue, int tiempo_actual){
   //SI el proceso siendo ejecutado termino su ejecucion
   if (queue->proc_actual->tiempo_termino_ejecucion >= tiempo_actual){
@@ -129,3 +135,4 @@ void EndProc(Queue*queue, int tiempo_actual){
     queue->proc_actual->indice_arreglo_actual += 1;
   }
 }
+*/
