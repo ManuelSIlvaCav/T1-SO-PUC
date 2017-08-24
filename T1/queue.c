@@ -7,6 +7,7 @@ Queue* initQueue(int cap) {
   new->size = 0;
   new->estado_SO = 0;
   new->data = calloc(cap, sizeof(Process*));
+  new->indice_robin = 0;
   for (int i = 0; i < cap; i++) {
     new->data[i] = calloc(1, sizeof(Process));
   }
@@ -107,8 +108,10 @@ Process*GetNext(Queue*queue, int tiempo_actual){
   for (int i =0; i < queue->size; i++){
 
     if (queue->data[i]->status == 0 && queue->data[i]->tiempo_inicio <= tiempo_actual){
-      printf("CONSEGUI NEXT %d Proceso: %d ", tiempo_actual, i);
+      if (queue->data[i]->indice_arreglo_actual == 0) printf("CREE EL PROCESO %d\n", queue->data[i]->PID);
+      else printf("CONSEGUI NEXT %d Proceso: %d ", tiempo_actual, queue->data[i]->PID);
       queue->estado_SO = 1;
+      queue->data[i]->tiempo_inicio = tiempo_actual;
       queue->proc_actual = queue->data[i];
       return queue->data[i];
     }
@@ -136,8 +139,58 @@ void EndProc(Queue*queue, int tiempo_actual){
     queue->proc_actual->indice_arreglo_actual += 2;
 
     //Si me paso del numero de tiempos- Mato el proceso
-    if (queue->proc_actual->tiempos < queue->proc_actual->indice_arreglo_actual) queue->proc_actual->status=3;
+    if (queue->proc_actual->tiempos < queue->proc_actual->indice_arreglo_actual) {
+      queue->proc_actual->status=3;
+      printf("Mate al proceso %d, %s\n", queue->proc_actual->PID, queue->proc_actual->name);
+      }
     queue->estado_SO = 0;
     printf("TERMINE ACTUAL en %d proceso: %d proximo:%d\n", tiempo_actual, queue->proc_actual->PID, queue->proc_actual->tiempo_inicio);
+  }
+}
+
+
+int potencia(int base, int expo){
+  if (expo == 0) return 1;
+  else if (expo%2) return base * potencia(base, expo-1);
+  else {
+    int temp = potencia(base, expo/2);
+    return temp * temp;
+  }
+}
+int PrioridadQuantum(int prioridad_tex, int quantum){
+  int prioridad = 0;
+  double divi = prioridad_tex/quantum;
+  prioridad = (prioridad_tex*quantum) + potencia(-1, round(divi))*prioridad_tex;
+  return prioridad;
+}
+
+int Qtiempo(int prioridad){
+  double result;
+  result = ceil(prioridad/64);
+  return result;
+}
+
+Process*RobinNext(Queue*queue, int tiempo_actual){
+  for(int i = 0; i < queue->size; i++){
+    if (queue->data[i]->status == 0 && queue->data[i]->tiempo_inicio <= tiempo_actual){
+      queue->estado_SO = 1;
+      queue->data[i]->tiempo_inicio = tiempo_actual;
+      queue->proc_actual = queue->data[i];
+      return queue->data[i];
+    }
+  }
+}
+
+void RoundRobin(Queue*queue, int tiempo_actual){
+  //No hay nada ejecutando busco al proximo
+  if (queue->estado_SO == 0){
+    Process* proc = RobinNext(queue, tiempo_actual);
+    if (proc == NULL);
+    else {
+
+        actualizar_proceso(tiempo_actual, proc);
+    }
+
+
   }
 }

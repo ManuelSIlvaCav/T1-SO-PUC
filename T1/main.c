@@ -10,7 +10,7 @@ int main(int argc, char * argv[]) {
   int prioridad;
   int tiempo_inicio;
   int largo_tiempos;
-  int PID = 99999;
+  int PID = 99999999;
 
   char*txt = argv[2];
   FILE*fr;
@@ -22,6 +22,7 @@ int main(int argc, char * argv[]) {
 
   char*input = argv[1];
   int i=0;
+
   if (strcmp(input, "fcfs")==0){
     printf("Estoy en fcfs\n");
 
@@ -78,10 +79,39 @@ int main(int argc, char * argv[]) {
 
   else if (strcmp(input,"roundrobin")==0){
     printf("Estoy en roundrobin");
+    int quantum;
+    int priori_quantum;
+    int qtime;
+
+    quantum = strtol(argv[3], NULL, 10);
+
+    while(fscanf(fr, "%s", nombre) != EOF){
+      fscanf(fr, "%d %d %d", &prioridad, &tiempo_inicio, &largo_tiempos);
+      printf("Printeando %s, %d, %d, %d fin\n", nombre, prioridad, tiempo_inicio, largo_tiempos);
+      int lista_tiempo[largo_tiempos*2-1];
+      for (int i=0; i< largo_tiempos*2-1; i++){
+        fscanf(fr, "%d\n", &lista_tiempo[i]);
+      }
+
+
+
+
+      priori_quantum = PrioridadQuantum(prioridad, quantum);
+      Process*proc = initProc(PID, nombre, priori_quantum, tiempo_inicio, 0, largo_tiempos, lista_tiempo);
+      qtime = Qtiempo(priori_quantum);
+      proc->quantum_robin = qtime;
+      printf("Prioridad %d, Tiempo:%d \n", proc->priority, proc->indice_arreglo_actual);
+
+      insert_base_pid(q, proc);
+
+      PID--;
+
+    }
+
+    while(1){
+      i++;
+      RoundRobin(q, i);
   }
 
-
-
-
   return 0;
-}
+}}

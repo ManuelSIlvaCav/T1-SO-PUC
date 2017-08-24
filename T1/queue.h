@@ -7,6 +7,7 @@ struct queue {
   // 0- no hay nad ejecutando 1-procesos siendo ejecutado
   int estado_SO;
   struct process*proc_actual;
+  int indice_robin;
 };
 
 typedef struct queue Queue;
@@ -21,3 +22,10 @@ Process*ExtractMax(Queue*queue);
 
 void LiberarWaiting(Queue*queue, int tiempo_actual);
 void EndProc(Queue*queue, int tiempo_actual);
+
+int PrioridadQuantum(int prioridad_tex, int quantum);
+int Qtiempo(int prioridad);
+
+void RoundRobin(Queue*queue, int tiempo_actual);
+
+Process*RobinNext(Queue*queue, int tiempo_actual);
