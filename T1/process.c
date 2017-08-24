@@ -14,14 +14,9 @@ Process *initProc(int id, char* name, int priority, int start_time, int interval
   new->name = name;
   new->priority = priority;
   new->status = 2;
+  new-> sleep_robin = -1;
 
-
-
-  // new->tiempos = tiempos;
-  // new->indice_arreglo_actual =0;
-  // new->tiempo_termino_ejecucion=0;
-
-  //new->intervals = intervals;
+  new->quantum_time = 0;
   new->interval_size = interval_size;
   new->interval_index = 0;
 
@@ -32,7 +27,7 @@ Process *initProc(int id, char* name, int priority, int start_time, int interval
   new->intervals = (int*)malloc(sizeof(int) * (interval_size));
   for(int i = 0; i<interval_size; i++) {
     new->intervals[i] = intervals[i];
-    printf("%d dadasd \n", new->intervals[i]);
+
   }
   return new;
 }

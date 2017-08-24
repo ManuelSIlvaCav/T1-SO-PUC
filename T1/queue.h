@@ -24,3 +24,5 @@ void LiberarWaiting(Queue*queue);
 void EndProc(Queue*queue, int tiempo_actual);
 
 int isEmpty(Queue *queue);
+
+int potencia(int base, int expo);

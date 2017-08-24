@@ -17,11 +17,8 @@ struct process{
   int interval_size;
   int interval_index;
 
-  // int tiempos;
-  // int tiempo_inicio;
-  // int indice_arreglo_actual;
-
-  // åint start_time;
+  int quantum_time;
+  int sleep_robin;
   int awake_time;
   int sleep_time;
 

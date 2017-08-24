@@ -49,7 +49,7 @@ void inser_fcfs(Queue*queue, Process*proc){
   queue->size += 1;
   int i = queue->size - 1;
   queue->data[i] = proc;
-  
+
   printf("PRINTEANDO COLA INSERT\n");
   for (int i = 0; i < queue->size; i ++){
     printf("POS %d, PROCESO %d\n", i, queue->data[i]->PID);
@@ -134,13 +134,25 @@ int isEmpty(Queue *queue) {
 
 
 
-/*
-void EndProc(Queue*queue, int tiempo_actual){
-  //SI el proceso siendo ejecutado termino su ejecucion
-  if (queue->proc_actual->tiempo_termino_ejecucion >= tiempo_actual){
-    queue->proc_actual->status = 2;
-    queue->proc_actual->tiempo_inicio += queue->proc_actual->array[queue->proc_actual->indice_arreglo_actual+1];
-    queue->proc_actual->indice_arreglo_actual += 1;
+
+int potencia(int base, int expo){
+  if (expo == 0)return 1;
+  else if (expo%2) return base*potencia(base, expo-1);
+  else{
+    int temp = potencia(base, expo/2);
+    return temp*temp;
   }
 }
-*/
+
+int PrioridadQuamtum(int prioridad_txt, int quantum){
+  int prioridad = 0;
+  double divi = prioridad_txt/quantum;
+  prioridad = (prioridad_txt*quantum) + potencia(-1, round(divi))*prioridad_txt;
+  return prioridad;
+}
+
+int Qtiempo(int prioridad){
+  double result;
+  result = ceil(prioridad/64);
+  return result;
+}
