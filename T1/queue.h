@@ -18,6 +18,7 @@ void inser_fcfs(Queue*queue, Process*proc);
 void heapify(Queue*queue, int index );
 Process*GetNext(Queue*queue, int tiempo);
 Process* extractMax(Queue*queue);
+Process*extractMaxFcfs(Queue*queue);
 
 void LiberarWaiting(Queue*queue);
 void EndProc(Queue*queue, int tiempo_actual);

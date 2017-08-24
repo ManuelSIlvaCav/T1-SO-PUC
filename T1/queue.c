@@ -44,29 +44,21 @@ void insert(Queue *queue, Process * proc) {
 }
 
 
+/*Lo metemos alfinal de la cola en fcfs, orden de llegada*/
 void inser_fcfs(Queue*queue, Process*proc){
   queue->size += 1;
   int i = queue->size - 1;
   queue->data[i] = proc;
   
-}
-
-
-void insert_base_pid(Queue *queue, Process * proc) {
-  queue->size += 1;
-  int i = queue->size - 1;
-  queue->data[i] = proc;
-
-
-
-  while(i != 0 && queue->data[parent(i)]->PID < queue->data[i]->PID) {
-    printf("%d %d \n", parent(i), i);
-    swap(queue, i, parent(i));
-    i = parent(i);
+  printf("PRINTEANDO COLA INSERT\n");
+  for (int i = 0; i < queue->size; i ++){
+    printf("POS %d, PROCESO %d\n", i, queue->data[i]->PID);
   }
 
-
 }
+
+
+
 
 
 void heapify(Queue*queue, int index){
@@ -102,6 +94,29 @@ Process *extractMax(Queue*queue){
   return root;
 }
 
+Process*extractMaxFcfs(Queue*queue){
+  if (queue->size == 0) return NULL;
+
+  if (queue->size == 1){
+    queue->size --;
+    return queue->data[0];
+  }
+
+  Process* root = queue->data[0];
+  for(int i =1; i < queue->size; i++ ){
+    queue->data[i-1] = queue->data[i];
+  }
+  queue->size --;
+  printf("PRINTEANDO COLA EXTRACT\n");
+  for (int i = 0; i < queue->size; i ++){
+    printf("POS %d, PROCESO %d\n", i, queue->data[i]->PID);
+  }
+  return root;
+}
+
+
+
+
 void decreaseKey(Queue*queue, int index, int value){
   queue->data[index]->priority = value;
   while (index!= 0 && queue->data[parent(index)] > queue->data[index]){
@@ -110,28 +125,14 @@ void decreaseKey(Queue*queue, int index, int value){
   }
 }
 
-/*
-Process*GetNext(Queue*queue, int tiempo_actual){
-  for (int i =0; i < queue->size; i++){
 
-    if (queue->data[i]->status == 0 && queue->data[i]->tiempo_inicio <= tiempo_actual){
-      printf("CONSEGUI NEXT %d\n", tiempo_actual);
-      queue->estado_SO = 1;
-      queue->proc_actual = queue->data[i];
-      return queue->data[i];
-    }
 
-  }
-  return NULL;
-}
-*/
-void LiberarWaiting(Queue*queue){
-
-}
 
 int isEmpty(Queue *queue) {
   return queue->size == 0;
 }
+
+
 
 /*
 void EndProc(Queue*queue, int tiempo_actual){

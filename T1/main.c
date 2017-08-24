@@ -58,15 +58,19 @@ int main(int argc, char* argv[]) {
     int t = 0;
     int cpu_status = 0;
     int stop_cpu = 0;
+
     Queue*queue = initQueue(100);
-    while (t < 20){
+
+    while(t < 30) {
+
       printf("TIEMPO: %d\n", t);
-      for (int i = 0; i < n_proc; i++){
+      /* Revisamos si es que tenemos que desperatar un proceso */
+      for(int i = 0; i < n_proc; i++) {
         stop_cpu = 1;
-        Process*proc = procs[i];
-        /*Proceso NO MUERTO*/
-        if (proc->status != 3){
-          printf("PID: %d Estatus :%d, awake: %d\n", proc->PID, proc->status, proc->awake_time);
+        Process *proc = procs[i];
+        if (proc->status != 3) { // If not terminated
+          // printf("Entramos\n");
+          printf("PID: %d Estatus :%d, awake: %d intervalind: %d fin: %d\n", proc->PID, proc->status, proc->awake_time, proc->interval_index, proc->interval_size);
           stop_cpu = 0;
           if (proc->status == 2 && proc->awake_time == t) {
             printf("El proceso PID:%d cambia a estado READY\n", proc->PID);
@@ -74,32 +78,72 @@ int main(int argc, char* argv[]) {
             inser_fcfs(queue, proc);
           }
         }
-
-        // TERMINAMOS TOD
+      }
         if (stop_cpu) {
-          printf("Todos los procesos han terminado \n");
-          break;
-        }
+          int contador = 0;
+          for (int i = 0; i < n_proc; i ++){
+            printf("PROCESO %d status: %d :D\n", procs[i]->PID, procs[i]->status);
+            if (procs[i]->status != 3) contador++;
 
-        //CPU DESOCUPADA
-        if (cpu_status == 0) {
-          if (isEmpty(queue)) {
-            printf("No hay procesos en la cola READY\n");
-            printf("La CPU esta en estado IDLE\n");
-          } else {
-            Process* process = extractMax(queue);
-            printf("El proceso PID: %d cambia a estado RUNNING\n", process->PID);
-            process->status = 1;
-            printf("A tiempo de ejecucion: %d\n", process->intervals[process->interval_index]);
-            process->sleep_time = t + process->intervals[process->interval_index];
-            process->interval_index += 1;
-            cpu_status = 1;
+          }
+          if (contador == 0){
+            printf("Todos los procesos han terminado \n");
+            break;
           }
         }
 
+      
+      /* Si la cpu no tiene proceso, sacamos uno de la cola*/
+      if (cpu_status == 0) {
+        if (isEmpty(queue)) {
+          printf("No hay procesos en la cola READY\n");
+          printf("La CPU esta en estado IDLE\n");
+        } else {
+          Process*process = extractMaxFcfs(queue);
+          queue->proc_actual = process;
+          printf("El proceso PID: %d cambia a estado RUNNING\n", process->PID);
+          process->status = 1;
+          printf("A: %d\n", process->intervals[process->interval_index]);
+          process->sleep_time = t + process->intervals[process->interval_index];
+          process->interval_index += 1;
+          cpu_status = 1;
+        }
+      }
+      /* Si la cpu esta ejecutando algo, debemos revisar si es que termino */
+      if (cpu_status == 1) {
+        Process*process = queue->proc_actual;
+        printf("Estamos ejecutando el proceso PID: %d\n", process->PID);
+        printf("Sleep: %d\n", process->sleep_time);
+        //printf("Sleep: %d\n", process->sleep_time);
+
+
+        if (process->sleep_time == t ) {
+          // Revisamos si el proceso termina
+          if (process->interval_index == process->interval_size) {
+            printf("Detruimos el proceso PID: %d\n", process->PID);
+
+            for (int i = 0; i < queue->size; i++ ){
+              printf("HAY proceso en cola %s \n", queue->data[i]->name);
+            }
+            process->status = 3;
+            cpu_status = 0;
+          }
+          else {
+            printf("El proceso PID: %d cambia a estado WAITING\n", process->PID);
+            process->status = 2; // Process is waiting
+            process->awake_time = t + process->intervals[process->interval_index];
+            process->interval_index += 1;
+            cpu_status = 0;
+          }
+
+        }
 
       }
+      /* Actalizamos el tiempo */
+      t += 1;
+      printf("---------\n");
     }
+
 
 
   }
