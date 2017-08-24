@@ -14,7 +14,7 @@ typedef struct queue Queue;
 Queue* initQueue(int cap);
 
 void insert(Queue *queue, Process * proc);
-void insert_base_pid(Queue *queue, Process * proc);
+void inser_fcfs(Queue*queue, Process*proc);
 void heapify(Queue*queue, int index );
 Process*GetNext(Queue*queue, int tiempo);
 Process* extractMax(Queue*queue);

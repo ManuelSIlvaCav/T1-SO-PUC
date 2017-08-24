@@ -24,7 +24,7 @@ int main(int argc, char* argv[]) {
   while(fscanf(fr, "%s", name) != EOF) {
     n_proc += 1;
     fscanf(fr, "%d %d %d", &priority, &start_time, &n_a);
-    
+
     int intervals[2 * n_a - 1];
     for (int i = 0; i < 2 * n_a - 1; i++) {
       fscanf(fr, "%d\n", &intervals[i]);
@@ -55,58 +55,53 @@ int main(int argc, char* argv[]) {
   char* input = argv[1];
   // int i = 0;
   if (strcmp(input, "fcfs")==0){
-    /* 
-    printf("Estoy en fcfs\n");
-    
-    while(fscanf(fr, "%s", nombre) != EOF){
-      fscanf(fr, "%d %d %d", &prioridad, &tiempo_inicio, &largo_tiempos);
-      printf("Printeando %s, %d, %d, %d fin\n", nombre, prioridad, tiempo_inicio, largo_tiempos);
-      int lista_tiempo[largo_tiempos*2-1];
-      for (int i=0; i< largo_tiempos*2-1; i++){
-        fscanf(fr, "%d\n", &lista_tiempo[i]);
-        
-      }
-      Process*proc = initProc(PID, nombre, prioridad, tiempo_inicio, 0, largo_tiempos, lista_tiempo);
-      //printf("p:%d ID: %d, da %s anterior\n", proc->priority, proc->PID, proc->name);
-      //insert especial que inserta en base al id y no prioridad -- SE VAN CREANDO CON ID DECRECIENTES
-      insert_base_pid(q, proc);
-      
-      PID--;
-      
-    }
-    
-    //Se "ordena" el heap mediante el id del procesos, ya que se selecciona en el orden que entran no la prioridad
-    
-    for (int i = 0; i < q->size; i++) {
-      Process * current = q->data[i];
-      printf("p:%d ID: %d, da %s %d %d\n", current->priority, current->PID, current->name, current->tiempo_inicio, current->tiempos);
-      for (int indice = 0; indice<current->tiempos*2-1; indice++) printf("%d dasd\n", current->array[indice]);
-    }
-    
-    while(1){
-      //si el SO esta desocupado empezar a ejecutar
-      if (q->estado_SO==0){
-        Process*Ejecutado = GetNext(q, i);
-        if (Ejecutado == NULL) printf("IDLE\n");
-        else {
-          printf("GetNext\n");
+    int t = 0;
+    int cpu_status = 0;
+    int stop_cpu = 0;
+    Queue*queue = initQueue(100);
+    while (t < 20){
+      printf("TIEMPO: %d\n", t);
+      for (int i = 0; i < n_proc; i++){
+        stop_cpu = 1;
+        Process*proc = procs[i];
+        /*Proceso NO MUERTO*/
+        if (proc->status != 3){
+          printf("PID: %d Estatus :%d, awake: %d\n", proc->PID, proc->status, proc->awake_time);
+          stop_cpu = 0;
+          if (proc->status == 2 && proc->awake_time == t) {
+            printf("El proceso PID:%d cambia a estado READY\n", proc->PID);
+            proc->status = 0; // Process is ready;
+            inser_fcfs(queue, proc);
+          }
         }
-        //printf("%d\n", Ejecutado->indice_arreglo_actual);
-        //actualizar_proceso(i, Ejecutado);
+
+        // TERMINAMOS TOD
+        if (stop_cpu) {
+          printf("Todos los procesos han terminado \n");
+          break;
+        }
+
+        //CPU DESOCUPADA
+        if (cpu_status == 0) {
+          if (isEmpty(queue)) {
+            printf("No hay procesos en la cola READY\n");
+            printf("La CPU esta en estado IDLE\n");
+          } else {
+            Process* process = extractMax(queue);
+            printf("El proceso PID: %d cambia a estado RUNNING\n", process->PID);
+            process->status = 1;
+            printf("A tiempo de ejecucion: %d\n", process->intervals[process->interval_index]);
+            process->sleep_time = t + process->intervals[process->interval_index];
+            process->interval_index += 1;
+            cpu_status = 1;
+          }
+        }
+
+
       }
-      //Revisar procesos waiting - Ready
-      
-      
-      //chquear el termino del proceso actual - liberar SO
-      //EndProc(q, i);
-      
-      
-      i++;
-      if (i==10000) break;
     }
-    */
-    
-    
+
+
   }
 
   else if (strcmp(input, "priority") == 0){
@@ -115,7 +110,7 @@ int main(int argc, char* argv[]) {
     int stop_cpu = 0;
     Queue *queue = initQueue(100);
     Process *process;
-    while(t < 10) {
+    while(t < 30) {
       printf("TIEMPO: %d\n", t);
       /* Revisamos si es que tenemos que desperatar un proceso */
       for(int i = 0; i < n_proc; i++) {
@@ -123,7 +118,7 @@ int main(int argc, char* argv[]) {
         Process *proc = procs[i];
         if (proc->status != 3) { // If not terminated
           // printf("Entramos\n");
-          printf("PID: %d Estatus :%d, awake: %d\n", proc->PID, proc->status, proc->awake_time);
+          printf("PID: %d Estatus :%d, awake: %d intervalind: %d fin: %d\n", proc->PID, proc->status, proc->awake_time, proc->interval_index, proc->interval_size);
           stop_cpu = 0;
           if (proc->status == 2 && proc->awake_time == t) {
             printf("El proceso PID:%d cambia a estado READY\n", proc->PID);
@@ -134,7 +129,7 @@ int main(int argc, char* argv[]) {
         if (stop_cpu) {
           printf("Todos los procesos han terminado \n");
           break;
-        } 
+        }
       }
       /* Si la cpu no tiene proceso, sacamos uno de la cola*/
       if (cpu_status == 0) {
@@ -147,7 +142,7 @@ int main(int argc, char* argv[]) {
           process->status = 1;
           printf("A: %d\n", process->intervals[process->interval_index]);
           process->sleep_time = t + process->intervals[process->interval_index];
-          process->interval_index += 1; 
+          process->interval_index += 1;
           cpu_status = 1;
         }
       }
@@ -156,18 +151,24 @@ int main(int argc, char* argv[]) {
         printf("Estamos ejecutando el proceso PID: %d\n", process->PID);
         printf("Sleep: %d\n", process->sleep_time);
         //printf("Sleep: %d\n", process->sleep_time);
-        if (process->sleep_time == t) {
+
+
+        if (process->sleep_time == t ) {
           // Revisamos si el proceso termina
-          if (process->interval_index == process->interval_size - 1) {
+          if (process->interval_index == process->interval_size) {
             printf("Detruimos el proceso PID: %d\n", process->PID);
             process->status = 3;
-          } 
-          printf("El proceso PID: %d cambia a estado WAITING\n", process->PID);
-          process->status = 2; // Process is waiting
-          process->awake_time = t + process->intervals[process->interval_index];
-          process->interval_index += 1;
-          cpu_status = 0;
+          }
+          else {
+            printf("El proceso PID: %d cambia a estado WAITING\n", process->PID);
+            process->status = 2; // Process is waiting
+            process->awake_time = t + process->intervals[process->interval_index];
+            process->interval_index += 1;
+            cpu_status = 0;
+          }
+
         }
+
       }
       /* Actalizamos el tiempo */
       t += 1;

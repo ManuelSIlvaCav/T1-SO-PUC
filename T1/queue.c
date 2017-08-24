@@ -41,9 +41,16 @@ void insert(Queue *queue, Process * proc) {
     swap(queue, i, parent(i));
     i = parent(i);
   }
-
-
 }
+
+
+void inser_fcfs(Queue*queue, Process*proc){
+  queue->size += 1;
+  int i = queue->size - 1;
+  queue->data[i] = proc;
+  
+}
+
 
 void insert_base_pid(Queue *queue, Process * proc) {
   queue->size += 1;
@@ -82,7 +89,7 @@ void heapify(Queue*queue, int index){
 
 Process *extractMax(Queue*queue){
   if (queue->size == 0) return NULL;
-  
+
   if (queue->size == 1){
     queue->size --;
     return queue->data[0];
