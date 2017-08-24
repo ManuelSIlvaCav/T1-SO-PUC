@@ -15,16 +15,13 @@ Process *initProc(int id, char* name, int priority, int start_time, int interval
   new->priority = priority;
   new->status = 2;
 
-  for (int i = 0; i < interval_size; i++) {
-    printf("%d ", intervals[interval_size]);
-  }
-  printf("\n");
+
 
   // new->tiempos = tiempos;
   // new->indice_arreglo_actual =0;
   // new->tiempo_termino_ejecucion=0;
 
-  new->intervals = intervals;
+  //new->intervals = intervals;
   new->interval_size = interval_size;
   new->interval_index = 0;
 
@@ -32,9 +29,11 @@ Process *initProc(int id, char* name, int priority, int start_time, int interval
   new->sleep_time = 0;
 
 
-  // new->array = (int*)malloc(sizeof(int) * (tiempos*2-1));
-  // for(int i = 0; i<tiempos*2-1; i++) new->array[i] = lista_tiempos[i];
-  //printf("%d dadasd \n", lista_tiempos[1]);
+  new->intervals = (int*)malloc(sizeof(int) * (interval_size));
+  for(int i = 0; i<interval_size; i++) {
+    new->intervals[i] = intervals[i];
+    printf("%d dadasd \n", new->intervals[i]);
+  }
   return new;
 }
 
@@ -44,4 +43,3 @@ void actualizar_proceso(int tiempo_actual, Process*proc){
   proc->status = 1;
 }
 */
-
