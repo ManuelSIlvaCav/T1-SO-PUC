@@ -37,7 +37,7 @@ void insert(Queue *queue, Process * proc) {
   queue->data[i] = proc;
 
   while(i != 0 && queue->data[parent(i)]->priority < queue->data[i]->priority) {
-    printf("%d %d \n", parent(i), i);
+    // printf("%d %d \n", parent(i), i);
     swap(queue, i, parent(i));
     i = parent(i);
   }
@@ -49,12 +49,6 @@ void inser_fcfs(Queue*queue, Process*proc){
   queue->size += 1;
   int i = queue->size - 1;
   queue->data[i] = proc;
-
-  printf("PRINTEANDO COLA INSERT\n");
-  for (int i = 0; i < queue->size; i ++){
-    printf("POS %d, PROCESO %d\n", i, queue->data[i]->PID);
-  }
-
 }
 
 
@@ -107,10 +101,6 @@ Process*extractMaxFcfs(Queue*queue){
     queue->data[i-1] = queue->data[i];
   }
   queue->size --;
-  printf("PRINTEANDO COLA EXTRACT\n");
-  for (int i = 0; i < queue->size; i ++){
-    printf("POS %d, PROCESO %d\n", i, queue->data[i]->PID);
-  }
   return root;
 }
 
