@@ -1,33 +1,33 @@
 Estadisticas Generales:
-Procesos Terminados: 4
-Tiempo SImulacion: 53
+Procesos Terminados: 0
+Tiempo SImulacion: 6
 
 Estadisticas por Procesos:
 Proceso: 0 
- Numero Veces Elegido Ejecutar: 10
+ Numero Veces Elegido Ejecutar: 1
  Numero Bloqueos: 0
-Waiting Time: 43
-Response Time: 1
- Turnarround Time: 52
+Waiting Time: 1
+Response Time: 0
+ Turnarround Time: 1
 
 Proceso: 1 
- Numero Veces Elegido Ejecutar: 5
- Numero Bloqueos: 2
-Waiting Time: 30
-Response Time: 3
- Turnarround Time: 36
+ Numero Veces Elegido Ejecutar: 0
+ Numero Bloqueos: 0
+Waiting Time: 6
+Response Time: 2
+ Turnarround Time: 2
 
 Proceso: 2 
- Numero Veces Elegido Ejecutar: 6
- Numero Bloqueos: 1
-Waiting Time: 39
-Response Time: 8
- Turnarround Time: 43
+ Numero Veces Elegido Ejecutar: 0
+ Numero Bloqueos: 0
+Waiting Time: 6
+Response Time: 3
+ Turnarround Time: 3
 
 Proceso: 3 
- Numero Veces Elegido Ejecutar: 8
- Numero Bloqueos: 3
-Waiting Time: 47
-Response Time: 10
- Turnarround Time: 51
+ Numero Veces Elegido Ejecutar: 0
+ Numero Bloqueos: 0
+Waiting Time: 6
+Response Time: 4
+ Turnarround Time: 4
 

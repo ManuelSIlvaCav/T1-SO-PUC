@@ -4,16 +4,17 @@
 #include "queue.h"
 
 
-void callback() {
-  printf("Adios amigos\n");
-  exit(0);
-}
+static volatile int keepRunning = 1;
 
+void intHandler(int dummy) {
+    keepRunning = 0;
+}
 
 
 int main(int argc, char* argv[]) {
 
-  signal(SIGINT, callback);
+  signal(SIGINT, intHandler);
+  
   //prueba de procesos y cola
 
   //Armado de procesos acorde al txt
@@ -75,8 +76,7 @@ int main(int argc, char* argv[]) {
 
     Queue*queue = initQueue(n_proc);
 
-    while(1) {
-
+    while(keepRunning) {
       printf("TIEMPO: %d\n", t);
       /* Revisamos si es que tenemos que desperatar un proceso */
       for(int i = 0; i < n_proc; i++) {
@@ -195,7 +195,7 @@ int main(int argc, char* argv[]) {
     int stop_cpu = 0;
     Queue *queue = initQueue(n_proc);
     Process *process;
-    while(1) {
+    while(!stop_cpu && keepRunning) {
       printf("TIEMPO: %d\n", t);
       /* Revisamos si es que tenemos que desperatar un proceso */
       for(int i = 0; i < n_proc; i++) {
@@ -306,7 +306,7 @@ int main(int argc, char* argv[]) {
     }
 
     //SIMULAMOS
-    while(1) {
+    while(keepRunning) {
 
       printf("TIEMPO: %d\n", t);
       /* Revisamos si es que tenemos que desperatar un proceso */
@@ -448,20 +448,20 @@ int main(int argc, char* argv[]) {
 
 
 
-  FILE*f = fopen("Estadisticas.txt", "w");
-  fprintf(f, "Estadisticas Generales:\n" );
+  // FILE*f = fopen("Estadisticas.txt", "w");
+  printf("Estadisticas Generales:\n" );
   int contador_terminados = 0;
   for (int i = 0; i < n_proc; i++){
     if (procs[i]->status == 3) contador_terminados++;
   }
-  fprintf(f,"Procesos Terminados: %d\n", contador_terminados);
-  fprintf(f,"Tiempo SImulacion: %d\n\n", t);
+  printf("Procesos Terminados: %d\n", contador_terminados);
+  printf("Tiempo SImulacion: %d\n\n", t);
 
-  fprintf(f, "Estadisticas por Procesos:\n");
+  printf("Estadisticas por Procesos:\n");
   for (int i = 0; i < n_proc; i++){
-    fprintf(f, "Proceso: %d \n Numero Veces Elegido Ejecutar: %d\n Numero Bloqueos: %d\n", procs[i]->PID, procs[i]->seleccion_ejecutadas, procs[i]->bloqueos);
-    fprintf(f, "Waiting Time: %d\n", procs[i]->t_waiting);
-    fprintf(f, "Response Time: %d\n Turnarround Time: %d\n\n", procs[i]->response, procs[i]->turnarround);
+    printf("Proceso: %d \n Numero Veces Elegido Ejecutar: %d\n Numero Bloqueos: %d\n", procs[i]->PID, procs[i]->seleccion_ejecutadas, procs[i]->bloqueos);
+    printf("Waiting Time: %d\n", procs[i]->t_waiting);
+    printf("Response Time: %d\n Turnarround Time: %d\n\n", procs[i]->response, procs[i]->turnarround);
   }
 
 
