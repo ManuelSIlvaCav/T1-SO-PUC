@@ -22,6 +22,13 @@ struct process{
   int awake_time;
   int sleep_time;
 
+  //Estadisticas
+  int seleccion_ejecutadas;
+  int bloqueos;
+  int t_waiting;
+  int response;
+  int turnarround;
+
 };
 typedef struct process Process;
 

@@ -1,0 +1,17 @@
+Estadisticas Generales:
+Procesos Terminados: 0
+Tiempo SImulacion: 20
+
+Estadisticas por Procesos:
+Proceso: 0 
+ Numero Veces Elegido Ejecutar: 3
+ Numero Bloqueos: 0
+Proceso: 1 
+ Numero Veces Elegido Ejecutar: 3
+ Numero Bloqueos: 1
+Proceso: 2 
+ Numero Veces Elegido Ejecutar: 2
+ Numero Bloqueos: 0
+Proceso: 3 
+ Numero Veces Elegido Ejecutar: 2
+ Numero Bloqueos: 1

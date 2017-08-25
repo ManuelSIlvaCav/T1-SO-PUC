@@ -1,3 +1,4 @@
-Process1 18 1 2 3 2 3
-Process2 32 6 2 3 2 3
-Process3 19 8 2 3 2 3
+Process1 18 1 1 10
+Process2 32 2 3 3 2 3 4 2
+Process3 19 3 2 3 2 3
+Process4 40 4 4 2 2 2 2 2 2 2

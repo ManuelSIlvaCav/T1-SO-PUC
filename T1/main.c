@@ -12,6 +12,7 @@ int main(int argc, char* argv[]) {
   int start_time;
   int n_a;
   int n_intervals;
+  int t = 0;
   // int PID = 0;
 
   char*txt = argv[2];
@@ -56,8 +57,9 @@ int main(int argc, char* argv[]) {
   // int i = 0;
 
 
+
   if (strcmp(input, "fcfs")==0){
-    int t = 0;
+
     int cpu_status = 0;
     int stop_cpu = 0;
 
@@ -109,6 +111,9 @@ int main(int argc, char* argv[]) {
           process->sleep_time = t + process->intervals[process->interval_index];
           process->interval_index += 1;
           cpu_status = 1;
+
+          //Contador de ejecutadas
+          process->seleccion_ejecutadas ++;
         }
       }
       /* Si la cpu esta ejecutando algo, debemos revisar si es que termino */
@@ -136,6 +141,9 @@ int main(int argc, char* argv[]) {
             process->awake_time = t + process->intervals[process->interval_index];
             process->interval_index += 1;
             cpu_status = 0;
+
+            //COntador bloqueos
+            process->bloqueos ++;
           }
 
         }
@@ -151,7 +159,7 @@ int main(int argc, char* argv[]) {
   }
 
   else if (strcmp(input, "priority") == 0){
-    int t = 0;
+
     int cpu_status = 0;
     int stop_cpu = 0;
     Queue *queue = initQueue(100);
@@ -190,6 +198,8 @@ int main(int argc, char* argv[]) {
           process->sleep_time = t + process->intervals[process->interval_index];
           process->interval_index += 1;
           cpu_status = 1;
+
+          process->seleccion_ejecutadas ++;
         }
       }
       /* Si la cpu esta ejecutando algo, debemos revisar si es que termino */
@@ -211,6 +221,8 @@ int main(int argc, char* argv[]) {
             process->awake_time = t + process->intervals[process->interval_index];
             process->interval_index += 1;
             cpu_status = 0;
+
+            process->bloqueos ++;
           }
 
         }
@@ -224,7 +236,7 @@ int main(int argc, char* argv[]) {
   else if (strcmp(input,"roundrobin")==0){
     printf("Estoy en roundrobin");
     int quantum = strtol(argv[3], NULL, 10);
-    int t = 0;
+
     int cpu_status = 0;
     int stop_cpu = 0;
 
@@ -284,6 +296,9 @@ int main(int argc, char* argv[]) {
           queue->proc_actual = process;
           printf("El proceso PID: %d cambia a estado RUNNING\n", process->PID);
           process->status = 1;
+
+          // elegido
+          process->seleccion_ejecutadas ++;
           //SI Q >= A
           if (process->quantum_time >= process->intervals[process->interval_index]){
             printf("A TIME: %d\n",process->quantum_time - process->intervals[process->interval_index]);
@@ -332,6 +347,9 @@ int main(int argc, char* argv[]) {
               process->interval_index += 1;
               cpu_status = 0;
               process->sleep_robin = -1;
+
+              //BLoqueos
+              process->bloqueos ++;
             }
 
             else if (process->sleep_robin == 0){
@@ -354,6 +372,21 @@ int main(int argc, char* argv[]) {
     }
   }
 
+
+
+  FILE*f = fopen("Estadisticas.txt", "w");
+  fprintf(f, "Estadisticas Generales:\n" );
+  int contador_terminados = 0;
+  for (int i = 0; i < n_proc; i++){
+    if (procs[i]->status == 3) contador_terminados++;
+  }
+  fprintf(f,"Procesos Terminados: %d\n", contador_terminados);
+  fprintf(f,"Tiempo SImulacion: %d\n\n", t);
+
+  fprintf(f, "Estadisticas por Procesos:\n");
+  for (int i = 0; i < n_proc; i++){
+    fprintf(f, "Proceso: %d \n Numero Veces Elegido Ejecutar: %d\n Numero Bloqueos: %d\n", procs[i]->PID, procs[i]->seleccion_ejecutadas, procs[i]->bloqueos);
+  }
 
 
 

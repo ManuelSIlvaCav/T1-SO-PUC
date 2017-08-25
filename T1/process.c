@@ -28,6 +28,13 @@ Process *initProc(int id, char* name, int priority, int start_time, int interval
   for(int i = 0; i<interval_size; i++) {
     new->intervals[i] = intervals[i];
 
+  //Estadisticas
+  new->bloqueos = 0;
+  new->response = 0;
+  new->seleccion_ejecutadas = 0;
+  new->t_waiting = 0;
+  new-> turnarround = 0;
+
   }
   return new;
 }
