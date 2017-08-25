@@ -13,21 +13,21 @@ Response Time: 1
 Proceso: 1 
  Numero Veces Elegido Ejecutar: 5
  Numero Bloqueos: 2
-Waiting Time: 36
+Waiting Time: 30
 Response Time: 3
- Turnarround Time: 42
+ Turnarround Time: 36
 
 Proceso: 2 
  Numero Veces Elegido Ejecutar: 6
  Numero Bloqueos: 1
-Waiting Time: 43
+Waiting Time: 39
 Response Time: 8
- Turnarround Time: 47
+ Turnarround Time: 43
 
 Proceso: 3 
- Numero Veces Elegido Ejecutar: 4
+ Numero Veces Elegido Ejecutar: 8
  Numero Bloqueos: 3
-Waiting Time: 31
+Waiting Time: 47
 Response Time: 10
- Turnarround Time: 39
+ Turnarround Time: 51
 
