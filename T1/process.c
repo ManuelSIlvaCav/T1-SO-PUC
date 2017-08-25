@@ -34,6 +34,7 @@ Process *initProc(int id, char* name, int priority, int start_time, int interval
   new->seleccion_ejecutadas = 0;
   new->t_waiting = 0;
   new-> turnarround = 0;
+  new->first_time =0;
 
   }
   return new;

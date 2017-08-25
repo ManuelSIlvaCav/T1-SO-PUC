@@ -6,12 +6,28 @@ Estadisticas por Procesos:
 Proceso: 0 
  Numero Veces Elegido Ejecutar: 10
  Numero Bloqueos: 0
+Waiting Time: 43
+Response Time: 1
+ Turnarround Time: 52
+
 Proceso: 1 
  Numero Veces Elegido Ejecutar: 5
  Numero Bloqueos: 2
+Waiting Time: 36
+Response Time: 3
+ Turnarround Time: 42
+
 Proceso: 2 
  Numero Veces Elegido Ejecutar: 6
  Numero Bloqueos: 1
+Waiting Time: 43
+Response Time: 8
+ Turnarround Time: 47
+
 Proceso: 3 
- Numero Veces Elegido Ejecutar: 8
+ Numero Veces Elegido Ejecutar: 4
  Numero Bloqueos: 3
+Waiting Time: 31
+Response Time: 10
+ Turnarround Time: 39
+

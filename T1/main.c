@@ -73,7 +73,7 @@ int main(int argc, char* argv[]) {
     int cpu_status = 0;
     int stop_cpu = 0;
 
-    Queue*queue = initQueue(100);
+    Queue*queue = initQueue(n_proc);
 
     while(1) {
 
@@ -90,6 +90,12 @@ int main(int argc, char* argv[]) {
             printf("El proceso PID: %d cambia a estado READY\n", proc->PID);
             proc->status = 0; // Process is ready;
             inser_fcfs(queue, proc);
+            //Calculo REsponse y Turnarround
+            if (proc->first_time == 0){
+              proc->first_time = 1;
+              proc->response = t;
+              proc->turnarround = t;
+            }
           }
         }
       }
@@ -124,6 +130,11 @@ int main(int argc, char* argv[]) {
 
           //Contador de ejecutadas
           process->seleccion_ejecutadas ++;
+          //response
+          if (process->first_time == 1){
+            process->response = t - process->response;
+            process->first_time = 2;
+          }
         }
       }
       /* Si la cpu esta ejecutando algo, debemos revisar si es que termino */
@@ -138,6 +149,9 @@ int main(int argc, char* argv[]) {
           // Revisamos si el proceso termina
           if (process->interval_index == process->interval_size) {
             printf("Detruimos el proceso PID: %d\n", process->PID);
+
+            //Turnarround
+            process->turnarround = t- process->turnarround;
 
             for (int i = 0; i < queue->size; i++ ){
               printf("HAY proceso en cola %s \n", queue->data[i]->name);
@@ -159,6 +173,13 @@ int main(int argc, char* argv[]) {
         }
 
       }
+
+      // Waiting TIME
+      for (int i = 0; i < n_proc; i++){
+        if (procs[i]->status== 0 || procs[i]->status == 2){
+          procs[i]->t_waiting ++;
+        }
+      }
       /* Actalizamos el tiempo */
       t += 1;
       printf("---------\n");
@@ -172,7 +193,7 @@ int main(int argc, char* argv[]) {
 
     int cpu_status = 0;
     int stop_cpu = 0;
-    Queue *queue = initQueue(100);
+    Queue *queue = initQueue(n_proc);
     Process *process;
     while(1) {
       printf("TIEMPO: %d\n", t);
@@ -187,6 +208,14 @@ int main(int argc, char* argv[]) {
             printf("El proceso PID: %d cambia a estado READY\n", proc->PID);
             proc->status = 0; // Process is ready;
             insert(queue, proc);
+          }
+
+
+          //Calculo REsponse y Turnarround
+          if (proc->first_time == 0){
+            proc->first_time = 1;
+            proc->response = t;
+            proc->turnarround = t;
           }
         }
         if (stop_cpu) {
@@ -209,6 +238,12 @@ int main(int argc, char* argv[]) {
           cpu_status = 1;
 
           process->seleccion_ejecutadas ++;
+
+          //response
+          if (process->first_time == 1){
+            process->response = t - process->response;
+            process->first_time = 2;
+          }
         }
       }
       /* Si la cpu esta ejecutando algo, debemos revisar si es que termino */
@@ -223,6 +258,8 @@ int main(int argc, char* argv[]) {
           if (process->interval_index == process->interval_size) {
             printf("Detruimos el proceso PID: %d\n", process->PID);
             process->status = 3;
+            //Turnarround
+            process->turnarround = t- process->turnarround;
           }
           else {
             printf("El proceso PID: %d cambia a estado WAITING\n", process->PID);
@@ -237,18 +274,26 @@ int main(int argc, char* argv[]) {
         }
 
       }
+      for (int i = 0; i < n_proc; i++){
+        if (procs[i]->status== 0 || procs[i]->status == 2){
+          procs[i]->t_waiting ++;
+        }
+      }
       /* Actalizamos el tiempo */
       t += 1;
     }
   }
 
   else if (strcmp(input, "roundrobin")==0){
-    int quantum = strtol(argv[3], NULL, 10);
+
+    int quantum = 3;
+    if (argv[3] != NULL) quantum = strtol(argv[3], NULL, 10);
+    
 
     int cpu_status = 0;
     int stop_cpu = 0;
 
-    Queue*queue = initQueue(100);
+    Queue*queue = initQueue(n_proc);
 
     //ASIGNAMOS EL QUANTUM Y LA PRIORIDAD A roundrobin
     for (int i = 0; i < n_proc; i++){
@@ -278,6 +323,15 @@ int main(int argc, char* argv[]) {
             proc->status = 0; // Process is ready;
             inser_fcfs(queue, proc);
           }
+
+
+          //Calculo REsponse y Turnarround
+          if (proc->first_time == 0){
+            proc->first_time = 1;
+            proc->response = t;
+            proc->turnarround = t;
+          }
+
         }
       }
         if (stop_cpu) {
@@ -325,6 +379,11 @@ int main(int argc, char* argv[]) {
             cpu_status = 1;
           }
 
+          //response
+          if (process->first_time == 1){
+            process->response = t - process->response;
+            process->first_time = 2;
+          }
         }
       }
       /* Si la cpu esta ejecutando algo, debemos revisar si es que termino */
@@ -339,6 +398,8 @@ int main(int argc, char* argv[]) {
           // Revisamos si el proceso termina
           if (process->interval_index == process->interval_size) {
             printf("Detruimos el proceso PID: %d\n", process->PID);
+            //Turnarround
+            process->turnarround = t- process->turnarround;
 
             for (int i = 0; i < queue->size; i++ ){
               printf("HAY proceso en cola %s \n", queue->data[i]->name);
@@ -373,6 +434,12 @@ int main(int argc, char* argv[]) {
         }
 
       }
+      //WAITING
+      for (int i = 0; i < n_proc; i++){
+        if (procs[i]->status== 0 || procs[i]->status == 2){
+          procs[i]->t_waiting ++;
+        }
+      }
       /* Actalizamos el tiempo */
       t += 1;
       printf("---------\n");
@@ -393,6 +460,8 @@ int main(int argc, char* argv[]) {
   fprintf(f, "Estadisticas por Procesos:\n");
   for (int i = 0; i < n_proc; i++){
     fprintf(f, "Proceso: %d \n Numero Veces Elegido Ejecutar: %d\n Numero Bloqueos: %d\n", procs[i]->PID, procs[i]->seleccion_ejecutadas, procs[i]->bloqueos);
+    fprintf(f, "Waiting Time: %d\n", procs[i]->t_waiting);
+    fprintf(f, "Response Time: %d\n Turnarround Time: %d\n\n", procs[i]->response, procs[i]->turnarround);
   }
 
 

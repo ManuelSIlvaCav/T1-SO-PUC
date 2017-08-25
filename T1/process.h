@@ -28,6 +28,7 @@ struct process{
   int t_waiting;
   int response;
   int turnarround;
+  int first_time;
 
 };
 typedef struct process Process;
