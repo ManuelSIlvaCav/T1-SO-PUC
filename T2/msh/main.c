@@ -20,7 +20,7 @@ void intHandler(int dummy) {
 
 
 void intHandler2 (int dummy){
-  printf("ADIOS SALUDOS!\n");
+  printf("\nADIOS SALUDOS!\n");
   exit(EXIT_SUCCESS);
 }
 
