@@ -14,6 +14,8 @@
 static volatile int keepRunning = 1;
 static volatile int MainLoop = 1;
 
+
+
 void intHandler(int dummy) {
     keepRunning = 0;
 }
@@ -26,12 +28,20 @@ void intHandler2 (int dummy){
 
 //BUILTINS
 int msh_exit(char **args);
-char* set_prompt(char** args, char*line);
+char* set_prompt(char** args, char*line, int status);
 char* newpath(char**args, char*path);
 char* newarg0(char*path, char*arg0);
 char* revalidate_path(char*path_info, char*string);
 
 
+int countdigits(int n){
+  int count = 0;
+  while(n!=0){
+    n /= 10;
+    count ++;
+  }
+  return count;
+}
 char *builtin_str[] = {
   "exit",
 };
@@ -42,14 +52,61 @@ int (*builtin_func[]) (char **) = {
 
 int msh_exit(char **args)
 {
-  printf("ENTRANDO EXIT\n ");
-  return 0;
+  //printf("ENTRANDO EXIT\n ");
+  MainLoop = 0;
 }
 
-char* set_prompt(char** args, char*prompt_message){
+char* set_prompt(char** args, char*prompt_message, int status){
   int len = strlen(args[1]);
-  prompt_message = malloc(len*sizeof(char));
+  prompt_message = malloc((len+1)*sizeof(char));
   strcpy(prompt_message, args[1]);
+  //Buscamos el *
+  char*ptr;
+  int index;
+  ptr = strstr(args[1], "*");
+  //SI existe el * en el string
+  //printf("STATUS %d", status);
+  if (ptr != NULL){
+
+    index = (int)(ptr - args[1]);
+    char *new_string = malloc((len + 3)*sizeof(char));
+
+
+    int n = countdigits(status);
+    //int to str
+    char *num_str = malloc((n+1)*sizeof(char));
+    snprintf(num_str, n+1, "%d", status);
+
+    //printf("NEW STR %s and count %d\n", num_str, n);
+
+    //printf("INDEX %d LEN %d\n", index, len);
+
+    if (index == len -1){
+
+       memcpy(new_string, prompt_message, len-1);
+       memcpy(&new_string[len-1], num_str, n);
+       printf("%s\n", new_string);
+
+     }
+    else if (index == 0){
+
+      memcpy(new_string, num_str, n);
+      memcpy(&new_string[n], &prompt_message[1], len-1);
+      printf("%s\n", new_string);
+
+    }
+    else {
+      memcpy(new_string, prompt_message, index);
+      memcpy(&new_string[index], num_str, n);
+      memcpy(&new_string[index + n], &prompt_message[index+1], len - index);
+      printf("%s\n", new_string);
+    }
+
+    return new_string;
+  }
+
+
+
   //printf("Seteandola %s \n", prompt_message);
   return prompt_message;
 }
@@ -65,7 +122,7 @@ char* newarg0(char*path_info, char*arg0){
   //printf("OLD PATH %s\n", path_info);
   int len1 = strlen(arg0);
   int len2 = strlen(path_info);
-  path_info[len2-1] = '\0';
+  path_info[len2] = '\0';
   //printf("NEW PATH CHANGE %s\n", path_info);
   char*newstring = malloc((len1 + len2)*sizeof(char));
   strcat(newstring, path_info);
@@ -173,9 +230,10 @@ int msh_launch(char **args){
           kill(pid, SIGKILL);
         }
       } while (!WIFEXITED(status) && !WIFSIGNALED(status) && keepRunning);
+      //printf("PROCESO BACK ME SALI DEL LOOP??? %d %d\n", wpid, status);
     }
 
-    return 1;
+    return status;
 
 }
 
@@ -202,10 +260,10 @@ int msh_launch_back(char**args){
         wpid = waitpid(pid, &status, WNOHANG);
 
       } while (!WIFEXITED(status) && !WIFSIGNALED(status));
-      //printf("PROCESO BACK ME SALI DEL LOOP???\n");
+      //printf("PROCESO BACK ME SALI DEL LOOP??? %d\n", wpid);
     }
 
-    return 1;
+    return status;
 }
 
 int msh_launch_multiple(char**args, int cantidad_procesos)
@@ -233,16 +291,19 @@ int msh_launch_multiple(char**args, int cantidad_procesos)
     }
 
   }
+  signal(SIGINT, intHandler);
   for (int i =0; i < cantidad_procesos; i++){
-
     do {
       wpid = waitpid(forks[i], &status, WUNTRACED);
       //printf("PROCESO TERMINADO %d %d???\n", forks[i], status);
+      if (keepRunning == 0){
+        kill(pid, SIGKILL);
+      }
     } while (!WIFEXITED(status) && !WIFSIGNALED(status));
 
   }
 
-  return 1;
+  return status;
 }
 
 
@@ -299,7 +360,7 @@ void msh_loop(void){
 
     //SetPrompt
     if (strcmp(args[0], "setPrompt")==0){
-      prompt_message = set_prompt(args, prompt_message);
+      prompt_message = set_prompt(args, prompt_message, status);
 
     }
 
@@ -310,6 +371,9 @@ void msh_loop(void){
       //printf("NEW PATH MSH LOOP %s\n", path_info);
     }
 
+    else if (strcmp(args[0], "resetPath")==0){
+      con_path = 0;
+    }
 
 
     //Todo lo demas &, &N, con path
@@ -361,7 +425,7 @@ void msh_loop(void){
     free(line);
     free(args);
     //free(args);
-  } while(status && MainLoop==1);
+  } while(MainLoop==1);
 
   printf("ADIOS SALUDOS!\n");
 }
