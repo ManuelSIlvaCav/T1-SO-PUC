@@ -138,7 +138,7 @@ char* revalidate_path(char*path_info, char*string){
   int len2 = strlen(string);
   char*newstring = malloc((len1 + len2)*sizeof(char));
   strcat(newstring, path_info);
-  strcat(newstring, string);
+  //strcat(newstring, string);
   //printf("LAST PATH REVALIDADO %s\n", newstring);
   return newstring;
 }
