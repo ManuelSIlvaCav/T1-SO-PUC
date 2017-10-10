@@ -1,5 +1,5 @@
 CC=gcc -std=gnu11
 CFLAGS=-Wunused
 
-msh: main.o
-		$(CC) -o msh main.o $(CFLAGS) -lm
+disk_scheduler: main.o
+		$(CC) -o disk_scheduler main.o $(CFLAGS) -lm
