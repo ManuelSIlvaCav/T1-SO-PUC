@@ -9,6 +9,29 @@ int* SCAN(int head, int n, int max, int*accesos, int*tupla);
 int*CLOOK(int head, int n, int*accesos, int*tupla);
 void insertion_sort(int n, int*arr);
 void rvereseArray(int*arr, int left, int right);
+int IndexMin(int*arr, int n, int checkm, int*indexlist);
+int checkindex(int*arr, int*indexarr, int n, int index);
+
+int checkindex(int*arr, int*indexarr, int n, int index){
+  int valor =0;
+  for (int i =0; i < n; i++){
+    if (indexarr[i] == index) valor = 1;
+  }
+  return valor;
+}
+
+
+int IndexMin(int*arr, int n, int check, int* indexlist){
+  int index;
+  int min = 999999999;
+  for (int i = 0; i < n; i++){
+    if (abs(arr[i] -check) < min && checkindex(arr, indexlist, n, i)==0){
+      min = abs(arr[i]-check);
+      index = i;
+    }
+  }
+  return index;
+}
 
 void insertion_sort(int n, int*arr){
   int i, key, j;
@@ -93,7 +116,7 @@ void fcfs(int head, int n, int*accesos, int*tupla){
 
 
       }
-    //printf("VOY DESDE %d a %d, seek: %d direcciones %d\n", actual, accesos[i], abs(actual - accesos[i]), direcciones );
+    printf("VOY DESDE %d a %d, seek: %d direcciones %d\n", actual, accesos[i], abs(actual - accesos[i]), direcciones );
     cilindros += abs(actual - accesos[i]);
     actual = accesos[i];
   }
@@ -107,27 +130,53 @@ void sstf(int head, int n, int*accesos, int*tupla){
 
   int temp;
   int *t = calloc(n, sizeof(int));
+  int *indexlist = calloc(n, sizeof(int));
+  int contador = 0;
+  int actual_head = head;
+  for(int i =0; i < n; i++){
+    indexlist[i] = -1;
+    t[i] = accesos[i];
+  }
   for (int i = 0; i < n; i++){
-    t[i] = abs(head - accesos[i]);
+    temp = IndexMin(accesos, n, actual_head, indexlist);
+    indexlist[contador] = temp;
+    contador++;
+    actual_head = accesos[temp];
   }
 
-  for (int i = 0; i < n; i++){
-    for (int j = i+1; j <n; j++){
-      if (t[i] > t[j]){
-        temp = t[i];
-        t[i] = t[j];
-        t[j] = temp;
-        temp = accesos[i];
-        accesos[i] = accesos[j];
-        accesos[j] = temp;
-      }
-    }
+
+
+  for (int i = 0; i <n; i++){
+    accesos[i] = t[indexlist[i]];
   }
 
-  // for(int i = 0; i <n; i++){
-  //   printf("loop ue %d, %d\n", t[i], accesos[i]);
+  // for (int i = 0; i < n; i++){
+  //   t[i] = abs(head - accesos[i]);
   // }
+  //
+  //
+  //
+  // for (int i = 0; i < n; i++){
+  //   for (int j = i+1; j <n; j++){
+  //     if (t[i] > t[j]){
+  //       temp = t[i];
+  //       t[i] = t[j];
+  //       t[j] = temp;
+  //       temp = accesos[i];
+  //       accesos[i] = accesos[j];
+  //       accesos[j] = temp;
+  //     }
+  //   }
+  // }
+
+  //  for(int i = 0; i <n; i++){
+  //    printf("loop ue %d, %d\n", t[i], accesos[i]);
+  //  }
+
+
   free(t);
+  free(indexlist);
+  
 
 
 }
@@ -294,20 +343,20 @@ int main(int argc, char*argv[]){
     fcfs(head, count -1,accesos, tupla);
   }
 
-  if (strcmp(politica, "sstf")==0){
+  else if (strcmp(politica, "sstf")==0){
     sstf(head, count-1, accesos, tupla);
     fcfs(head, count-1, accesos, tupla);
 
   }
 
-  if (strcmp(politica, "scan")==0){
+  else if (strcmp(politica, "scan")==0){
 
     new_queue = SCAN(head, count-1, 255, accesos, tupla);
     fcfs(head, count, new_queue, tupla);
 
   }
 
-  if (strcmp(politica, "c-look")==0){
+  else if (strcmp(politica, "c-look")==0){
 
     new_queue = CLOOK(head, count-1, accesos, tupla);
     fcfs(head, count-1, new_queue, tupla);
@@ -315,19 +364,24 @@ int main(int argc, char*argv[]){
   }
 
   if(strcmp(politica, "c-look")==0){
-    for (int i = 0; i<count-1;i++) printf("%d ",new_queue[i]);
+    for (int i = 0; i<count-2;i++) printf("%d,",new_queue[i]);
+    printf("%d", new_queue[count-2]);
+    free(new_queue);
 
 
   }
 
   else if (strcmp(politica, "scan")==0){
-    for (int i = 0; i<count;i++) printf("%d ",new_queue[i]);
+    for (int i = 0; i<count-1;i++) printf("%d,",new_queue[i]);
+    printf("%d", new_queue[count-1]);
+    free(new_queue);
 
 
   }
 
   else {
-    for (int i = 0; i<count-1;i++) printf("%d ",accesos[i]);
+    for (int i = 0; i<count-2;i++) printf("%d,",accesos[i]);
+    printf("%d", accesos[count-2]);
 
   }
 
@@ -338,7 +392,6 @@ int main(int argc, char*argv[]){
   printf("%dD msec\n", tupla[1]);
 
   free(accesos);
-  free(new_queue);
   free(tupla);
 
 
