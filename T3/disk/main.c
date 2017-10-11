@@ -116,7 +116,7 @@ void fcfs(int head, int n, int*accesos, int*tupla){
 
 
       }
-    printf("VOY DESDE %d a %d, seek: %d direcciones %d\n", actual, accesos[i], abs(actual - accesos[i]), direcciones );
+    //printf("VOY DESDE %d a %d, seek: %d direcciones %d\n", actual, accesos[i], abs(actual - accesos[i]), direcciones );
     cilindros += abs(actual - accesos[i]);
     actual = accesos[i];
   }
@@ -176,7 +176,7 @@ void sstf(int head, int n, int*accesos, int*tupla){
 
   free(t);
   free(indexlist);
-  
+
 
 
 }
