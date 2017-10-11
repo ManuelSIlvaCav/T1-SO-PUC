@@ -1,19 +1,13 @@
-# Tarea2
+# Tarea3
 Integrantes:
 Manuel Silva 13637207
 Iván Wolf xxxxxxx
 
 
-msh
-Para esta parte se utilizaron los siguientes supuestos.
-1) Como no se especifica los &n procesos si estos eran en background o en primer plano, se considero el segundo caso... por lo tanto no es posible ingresar comandos cuando se estan ejecutando los n procesos.
+Para esta parte se asumio que para el algoritmo scan se inicia el recorrido de la lectura hacia arriba desde donde empieza el cabezal, es decir si empiezo en 10 subo hasta 255 antes de devolverme.
 
-2) Para setear el path se sigue como en el enunciado setPath home/name/Desktop/ respetando las mayusculas de setpath (lo mismo para setPrompt)
+Para c-look como se aprendio en clases, se llega hasta el maximo numero primero (no necesariamente 255) del que se tenga que hacer acceso, antes de ir nuevamente al minimo valor (no necesariamente 0) para empeza nuevamente el ascensor.
 
-3) Si se setea el path por ejemplo "setPath /bin/" y se trata de ejecutar "/usr/bin/time" no se podra ya que se estaria usando mal la finalidad del path... por eso en caso de querer revertir la asigacion, se creo un builtin "resetPath" sin argumentos que restaura el path original.
+Para la implementacion, se hizo un trabajo de arreglos con ordenacion de este como fuera necesario dependiendo del algoritmo para hacerlo mas rapido. Actualmente fcfs, scan y c-look presentan 0 errores y toda la memoria liberada para distintas pruebas. SSTF presenta liberacion de toda la memoria, pero 2 errores que no se pudieron rastrear con valgrind (condicionales)
 
-4.a) No se especifica como es el ccomportamiento en caso e Ctrl+C cuando hay procesos background y se esta esperando comandos... en este caso se termina de igual manera la ejecucion de msh, pero se deja ejecutando el procesos que estaba en background.
-
-4.b) De igual manera para los N procesos en paralelo, como estos se asumio que corrian en primer plano (no background) se termina la ejecucion de todos (SIGKILL >:) ) y se retorna a msh para recibir mas comandos.
-
-5) Para setPrompt con * se reemplaza el exitcode del ultimo proceso donde este el * dentro del string.
+saludos!

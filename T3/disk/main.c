@@ -58,17 +58,18 @@ void fcfs(int head, int n, int*accesos, int*tupla){
       if (accesos[i] < head) dir_inicial = 0;
       else if(accesos[i] > head) dir_inicial = 1;
       else dir_inicial = -1;
-      printf("%d dir inicial;\n", dir_inicial);
+      //printf("%d dir inicial;\n", dir_inicial);
     }
 
     else {
-      //DIR INICIAL?
+      //DIR INICIAL NO igual
       if (dir_inicial != -1){
         if (accesos[i] < actual) new_dir = 0;
         else if(accesos[i] > actual) new_dir = 1;
         else new_dir =2;
       }
 
+      //DIR INICIAL mismo ==-1
       else {
         if (accesos[i] < actual) {
           new_dir = 0;
@@ -92,7 +93,7 @@ void fcfs(int head, int n, int*accesos, int*tupla){
 
 
       }
-    printf("VOY DESDE %d a %d, seek: %d direcciones %d\n", actual, accesos[i], abs(actual - accesos[i]), direcciones );
+    //printf("VOY DESDE %d a %d, seek: %d direcciones %d\n", actual, accesos[i], abs(actual - accesos[i]), direcciones );
     cilindros += abs(actual - accesos[i]);
     actual = accesos[i];
   }
@@ -139,7 +140,7 @@ int* SCAN(int head, int n, int maximal, int* accesos, int*tupla){
     else menores = menores + 1;
   }
 
-  printf("%d %d\n", mayores, menores);
+  //printf("%d %d\n", mayores, menores);
   //le agregamos la ida al 255
   int * mayores_list = calloc(mayores +1 , sizeof(int));
   int * menores_list = calloc(menores, sizeof(int));
@@ -200,7 +201,7 @@ int*CLOOK(int head, int n, int*accesos, int*tupla){
     else menores = menores + 1;
   }
 
-  printf("%d %d\n", mayores, menores);
+  //printf("%d %d\n", mayores, menores);
   //le agregamos la ida al 255
   int * mayores_list = calloc(mayores, sizeof(int));
   int * menores_list = calloc(menores, sizeof(int));
@@ -275,6 +276,7 @@ int main(int argc, char*argv[]){
   //Armamos arreglo de ints
   int*accesos = calloc(count - 1, sizeof(int));
   int*tupla = calloc(2, sizeof(int));
+  int* new_queue;
   fclose(fr);
   fr = fopen(input, "r");
   fscanf(fr, "%d", &head);
@@ -299,23 +301,49 @@ int main(int argc, char*argv[]){
   }
 
   if (strcmp(politica, "scan")==0){
-    int* new_queue;
+
     new_queue = SCAN(head, count-1, 255, accesos, tupla);
     fcfs(head, count, new_queue, tupla);
-    free(new_queue);
+
   }
 
   if (strcmp(politica, "c-look")==0){
-    int *new_queue;
+
     new_queue = CLOOK(head, count-1, accesos, tupla);
     fcfs(head, count-1, new_queue, tupla);
-    free(new_queue);
+
   }
 
-  for (int i =0; i < 2; i++) printf("tupla %d\n", tupla[i]);
+  if(strcmp(politica, "c-look")==0){
+    for (int i = 0; i<count-1;i++) printf("%d ",new_queue[i]);
+
+
+  }
+
+  else if (strcmp(politica, "scan")==0){
+    for (int i = 0; i<count;i++) printf("%d ",new_queue[i]);
+
+
+  }
+
+  else {
+    for (int i = 0; i<count-1;i++) printf("%d ",accesos[i]);
+
+  }
+
+  printf("\n");
+  printf("%d", tupla[0]);
+  printf("\n");
+  printf("%dT + ", tupla[0]);
+  printf("%dD msec\n", tupla[1]);
 
   free(accesos);
+  free(new_queue);
   free(tupla);
+
+
+
+
 
   return 0;
 }
