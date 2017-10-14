@@ -1,2 +1,2 @@
-# T1-SO-PUC
-Tarea 1 sistemas operativos deeeee
+# Tarea 3
+Integrantes: Manuel Silva, Iván Wolf
