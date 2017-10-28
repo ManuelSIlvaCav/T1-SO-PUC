@@ -11,3 +11,5 @@ Para c-look como se aprendio en clases, se llega hasta el maximo numero primero 
 Para la implementacion, se hizo un trabajo de arreglos con ordenacion de este como fuera necesario dependiendo del algoritmo para hacerlo mas rapido. Actualmente fcfs, scan y c-look presentan 0 errores y toda la memoria liberada para distintas pruebas. SSTF presenta liberacion de toda la memoria, pero 2 errores que no se pudieron rastrear con valgrind (condicionales)
 
 saludos!
+
+gcc -o cliente 

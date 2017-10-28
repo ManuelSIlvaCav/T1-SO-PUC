@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <string.h>
 
 #include <netdb.h>
 #include <netinet/in.h>
@@ -33,11 +34,22 @@ void* recieveMessage(void * client_socket){
 
 }
 
-
-void sendMessage(int socket, char* message){
-  send(socket, message, 1024,0);
+void * requestMatchMaking(int sock, char * username) {
+  int len = strlen(username);
+  char c = len + '0';
+  
+  char * string = malloc(sizeof(char)*256);
+  strcpy(string, "2");
+  strcat(string, &c);
+  strcat(string, username);
+  int success = send(sock, string, 1024, 0);
+  printf("MEnsaje enviado :%d\n", success);
 }
 
+
+int compareStrings(char *s1, char *s2) {
+  return !strcmp(s1, s2);
+}
 
 int main(int argc, char *argv[]){
   int sockfd, portno, n;
@@ -82,15 +94,22 @@ int main(int argc, char *argv[]){
       exit(1);
     }
 
-    printf("Connected player listening,\n");
-    pthread_create(&tid[0], NULL, &recieveMessage, &sockfd);
+    // printf("Connected player listening,\n");
+    // pthread_create(&tid[0], NULL, &recieveMessage, &sockfd);
 
     while (1) {
-      char* message = malloc(sizeof(char)*1024);
-       printf("\nYour Message: ");
-       scanf("%s", message);
-       printf("\n");
-       sendMessage(sockfd, message);
+      char* selection = malloc(sizeof(char));
+      printf("\n");
+      printf("Seleciona una opción\n");
+      printf("[2]: Pedir matchmaking\n");
+      scanf("%s", selection);
+      if (compareStrings(selection, "2")) {
+        char * username = calloc(256, sizeof(char));
+        printf("Elige un username\n");
+        scanf("%s", username);
+        requestMatchMaking(sockfd, username);
+      }
+
     }
     return 0;
 
