@@ -37,11 +37,14 @@ void* recieveMessage(void * client_socket){
 void * requestMatchMaking(int sock, char * username) {
   int len = strlen(username);
   char c = len + '0';
-  
+
   char * string = malloc(sizeof(char)*256);
   strcpy(string, "2");
-  strcat(string, &c);
+  //printf("Printeamos por separada %s\n", string);
+  strncat(string, &c, 1);
+  //printf("Printeamos por separada %s\n", string);
   strcat(string, username);
+  printf("ENVIANDO %s\n", string);
   int success = send(sock, string, 1024, 0);
   printf("MEnsaje enviado :%d\n", success);
 }

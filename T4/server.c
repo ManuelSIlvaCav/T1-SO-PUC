@@ -17,6 +17,12 @@
 #define PORT 8080;
 #define IP "0.0.0.0"
 
+//Estrcutura para argumentos listeningstruc
+struct arg_listening{
+  int client_socket;
+  char ** UserArray;
+};
+
 int compareStrings(char *s1, char *s2) {
   return !strcmp(s1, s2);
 }
@@ -41,7 +47,7 @@ int loggedUsers = 0;
 
 
 u_int16_t getId(char * username, char ** userArray) {
-  pritnf("Buscamos el ususario %s \n", username);
+  printf("Buscamos el ususario %s \n", username);
   for (int i = 0; i < loggedUsers; i++) {
     if (compareStrings(userArray[i], username)) {
       return (u_int16_t)i;
@@ -54,37 +60,34 @@ u_int16_t getId(char * username, char ** userArray) {
 }
 
 void responseMatchmaking(int sock, char * username, char ** userArray) {
-  u_int16_t id = getId(username, userArray); 
+  u_int16_t id = getId(username, userArray);
   printf("id: %d", id);
 }
 
-void *generalListen(void * client_socket, char ** userArray) {
-  int client = *(int*)client_socket;
+void *generalListen(void * arguments) {
+  struct arg_listening *args = arguments;
+
+  int client = args->client_socket;
+  char ** userArray = args->UserArray;
+
   printf("Escuachando a %d \n", client);
   while(1) {
     char buffer[1024];
     // recieveMessage(client, buffer);
+    printf("Esperando\n");
     recv(client, buffer, 1024, 0);
-    if (compareStrings(buffer[0], '2')) {
-      responseMatchmaking(client, &buffer[2], userArray);
-    }
-    sleep(5);
+    printf("PRINTEAMOS BUFFER %s\n", buffer);
+    printf("BUffer 0 %c\n", buffer[0]);
+    char opcion = buffer[0];
+    if (opcion == '2') {
+      printf("Response match\n");
+       responseMatchmaking(client, &buffer[2], userArray);
+     }
+    sleep(1);
   }
 }
 
-/*
-void* recieveMessage(void * client_socket){
-  int sender = *(int*)client_socket;
-  while(1){
-    printf("Waiting message... ♔ \n");
-    char* message = malloc(sizeof(char)*1024);
-    recv(sender, message, 1024, 0);
-    printf("%s\n", message);
-    sleep(3);
-  }
 
-}
-*/
 
 void sendMessage(int socket, char* message){
   send(socket, message, 1024,0);
@@ -183,21 +186,31 @@ int main (int argc, char*argv[]){
 
 
   /* MAX_QUEUE */
-  listen(sockfd, 1);
+  listen(sockfd, 5);
   printf("Server listening on port %d\n", port_number);
 
   /* LISTENING */
 
   char ** userArray = createUserArray();
-  
+  struct arg_listening list_args;
+  list_args.UserArray = userArray;
+
+
 
   while(1) {
      client_length = sizeof(client);
+
      // CHECK IF WE'VE A WAITING USER
 
      /* Accept actual connection from the client */
+     printf("ESPERANDO ACCEPT \n");
      client_socket = accept(sockfd, (struct sockaddr *)&client, (unsigned int *)&client_length);
-     pthread_create(&tid[1], NULL, &generalListen, &client_socket, &userArray);
+
+     //Lenamos la struct de listening
+     list_args.client_socket = client_socket;
+
+     pthread_create(&tid[1], NULL, &generalListen, &list_args);
+
      printf("– Connection accepted from %d at %d.%d.%d.%d:%d –\n", client_socket, client.sin_addr.s_addr&0xFF, (client.sin_addr.s_addr&0xFF00)>>8, (client.sin_addr.s_addr&0xFF0000)>>16, (client.sin_addr.s_addr&0xFF000000)>>24, client.sin_port);
 
      if (client_socket < 0) {
@@ -205,7 +218,7 @@ int main (int argc, char*argv[]){
         exit(1);
      }
 
-     /*
+     
     if (player_is_waiting == 0){
       printf("Connected player listening,\n");
       pthread_create(&tid[0], NULL, &game_room, &client_socket);
@@ -220,7 +233,8 @@ int main (int argc, char*argv[]){
        pthread_mutex_unlock(&general_mutex);
        pthread_cond_signal(&player_to_join);
      }
-     */
+
+     sleep(1);
    }
   return 0;
 }
