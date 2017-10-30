@@ -151,15 +151,14 @@ void* recieveMessage(void * client_socket){
 
 void * requestMatchMaking(int sock, char * username) {
   int len = strlen(username);
-  char c = len + '0';
-
-  char * string = malloc(sizeof(char)*256);
-  strcpy(string, "2");
-  //printf("Printeamos por separada %s\n", string);
-  strncat(string, &c, 1);
-  //printf("Printeamos por separada %s\n", string);
+  char id = 2;
+  char c = len;
+  char * string = malloc(sizeof(char)*(3+len));
+  string[0] = id;
+  string[1] = c;
+  string[2] = '\0';
   strcat(string, username);
-  printf("ENVIANDO %s\n", string);
+  printf("Probamos el Print id: %d, len: %d, username: %s", string[0], string[1], &string[2]);
   int success = send(sock, string, 1024, 0);
   printf("MEnsaje enviado :%d\n", success);
 }
@@ -226,7 +225,7 @@ int main(int argc, char *argv[]){
       printf("[2]: Pedir matchmaking\n [4]:BUscar Partida\n");
       scanf("%s", selection);
       if (compareStrings(selection, "2")) {
-        char * username = calloc(256, sizeof(char));
+        char * username = malloc(sizeof(char)*256);
         printf("Elige un username\n");
         scanf("%s", username);
         requestMatchMaking(sockfd, username);
