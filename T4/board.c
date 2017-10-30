@@ -28,6 +28,17 @@ static wchar_t ** create_board() {
   return board;
 }
 
+static wchar_t ** Board_Sync() {
+  // create dinamically malloc
+
+  wchar_t ** board = (wchar_t **) malloc(sizeof(wchar_t *)*8);
+  for (int i = 0; i < 8; i++) {
+    board[i] = (wchar_t *) malloc(sizeof(wchar_t)*8);
+  }
+
+  return board;
+}
+
 static void initialize_board(wchar_t ** p_board) {
   for (int i = 0; i < 8; i++) {
     for (int j = 0; j < 8; j++) {
@@ -56,6 +67,8 @@ static void initialize_board(wchar_t ** p_board) {
   }
 }
 
+
+
 static char * create_od_board() {
   char * board = (char *) malloc(sizeof(char *)*8*8);
   return board;
@@ -82,6 +95,8 @@ static void to_one_dimension_char(wchar_t ** board, char * od_board) {
   }
 
 }
+
+
 
 static void free_od_board(wchar_t * od_board) {
   free(od_board);

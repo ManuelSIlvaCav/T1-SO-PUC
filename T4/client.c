@@ -11,10 +11,100 @@
 
 #include "board.c"
 
+pthread_mutex_t general_mutex;
+pthread_cond_t respond_game;
+
+int mod(int a, int b){
+  if (b < 0) return mod(a, -b);
+  int ret =  a % b;
+  if (ret < 0) ret += b;
+  return ret;
+}
+
+
+
+char*gamesyncboard(char*one_dimension_board){
+  //Solo me interesan la posicion de las piezas
+  int contador_piezas = 0;
+  for (int i = 0; i < 64; i++){
+    if (one_dimension_board[i] == '1') contador_piezas++;
+    else if (one_dimension_board[i] == '2') contador_piezas++;
+    else if (one_dimension_board[i] == '3') contador_piezas++;
+    else if (one_dimension_board[i] == '4') contador_piezas++;
+    else if (one_dimension_board[i] == '5') contador_piezas++;
+    else if (one_dimension_board[i] == '6') contador_piezas++;
+    else if (one_dimension_board[i] == '7') contador_piezas++;
+    else if (one_dimension_board[i] == '8') contador_piezas++;
+    else if (one_dimension_board[i] == '9') contador_piezas++;
+    else if (one_dimension_board[i] == 'a') contador_piezas++;
+    else if (one_dimension_board[i] == 'b') contador_piezas++;
+    else if (one_dimension_board[i] == 'c') contador_piezas++;
+  }
+
+  char* arreglo_game = (char *) malloc(sizeof(char *)*(contador_piezas*4 + 2));
+  int fila_pos = 0;
+  char id = 12;
+  char tam = contador_piezas;
+  strncat(arreglo_game, &id, 1);
+  strncat(arreglo_game, &tam,1);
+
+  for (int i = 0; i < 64; i++){
+    char*pos = malloc(sizeof(char)*4);
+    char fila = fila_pos;
+    char col = mod(i, 8);
+    // SI es blanca 0
+    if(one_dimension_board[i] == '1' || one_dimension_board[i] == '2' || one_dimension_board[i] == '3'
+  || one_dimension_board[i] == '4'|| one_dimension_board[i] == '5'|| one_dimension_board[i] == '6') {
+     char tipo = 0;
+     strncat(pos, &tipo, 1);
+     strncat(pos, &col, 1);
+     strncat(pos, &fila, 1);
+     if (mod(i,8) ==7) fila_pos ++;
+     //printf("PRINTEAMOS SECUENCIA %s ,%c,%c \n", pos,fila,col);
+     strcat(arreglo_game, pos);
+
+    }
+    // SI es negra 1
+    if(one_dimension_board[i] == '7' || one_dimension_board[i] == '8' || one_dimension_board[i] == '9'
+  || one_dimension_board[i] == 'a'|| one_dimension_board[i] == 'b'|| one_dimension_board[i] == 'c'){
+    char tipo = 1;
+     strncat(pos,&tipo, 1);
+     strncat(pos, &col, 1);
+     strncat(pos, &fila, 1);
+     if (mod(i,8) ==7) fila_pos ++;
+     //printf("PRINTEAMOS SECUENCIA %s ,%c,%c \n", pos,fila,col);
+     strcat(arreglo_game, pos);
+    }
+
+  }
+  //printf("Secuencia FInal %s", arreglo_game);
+  printf("ID: %d Largo %d \nSec %s\n", arreglo_game[0], arreglo_game[1], &arreglo_game[2]);
+  return arreglo_game;
+}
+
+void GameSync(char * one_dimension_board, int sock){
+
+  char * arreglo_game = gamesyncboard(one_dimension_board);
+
+  //send(sock, arreglo_game, 1024, 0);
+
+}
+
+void SyncToBoard(char * one_dimension_board, char*arreglo_game, wchar_t**board){
+  //Funcion que me lleva desde el paquete codificado en bytes a un arreglo de strings one_dim_board
+  int porte = arreglo_game[1];
+
+  for (int i = 2; i < porte*4; i+=4){
+
+  }
+
+}
 
 void* recieveMessage(void * client_socket){
   int sender = *(int*)client_socket;
-  int n;
+  wchar_t ** board = create_board();
+  char * one_dimension_board = create_od_board();
+  initialize_board(board);
 
   while(1){
     printf("Waiting message... ♔ \n");
@@ -24,15 +114,40 @@ void* recieveMessage(void * client_socket){
     {
       printf("Mensaje %s", buffer);
     }
-    else {
-      print_board_buff(buffer);
+
+    else if (buffer[0] == 7){
+      //CASo de GameStart
+      printf("ID %c\n", buffer[3]);
+      char color = buffer[2];
+      char * string = malloc(sizeof(char)*3);
+      strncat(string, &buffer[3],1 );
+      strncat(string, &color, 1);
+      //printf("MENSAJE 7 %s\n", string);
+      send(sender, string, 1024, 0);
+
+    }
+    else if(buffer[0] == 13){
+      printf("Enviandome BOARDAUTHORITY\n");
+      //Recibo el arreglo de piezas ID13Tamano(color,col,fila,pieza)
+      SyncToBoard(one_dimension_board, buffer, board);
+
+
     }
 
-    sleep(3);
+    else if (buffer[0] == 16){
+      printf("REIBO GAMEREQUEST ENVO GAMSYNC");
+    }
+    else {
+
+      printf("PRINTEAMOS Mensaje General %s", buffer);
+    }
+
+    sleep(1);
 
   }
 
 }
+
 
 void * requestMatchMaking(int sock, char * username) {
   int len = strlen(username);
@@ -55,10 +170,14 @@ int compareStrings(char *s1, char *s2) {
 }
 
 int main(int argc, char *argv[]){
+  pthread_t tid[2];
   int sockfd, portno, n;
   struct sockaddr_in serv_addr;
   struct hostent * server;
-  pthread_t tid[1];
+
+
+  pthread_mutex_init(&general_mutex, NULL);
+  pthread_cond_init(&respond_game, NULL);
 
   setlocale(LC_ALL, "en_US.UTF-8");
   char buffer[64];
@@ -98,19 +217,31 @@ int main(int argc, char *argv[]){
     }
 
     // printf("Connected player listening,\n");
-    // pthread_create(&tid[0], NULL, &recieveMessage, &sockfd);
+    pthread_create(&tid[0], NULL, &recieveMessage, &sockfd);
 
     while (1) {
       char* selection = malloc(sizeof(char));
       printf("\n");
       printf("Seleciona una opción\n");
-      printf("[2]: Pedir matchmaking\n");
+      printf("[2]: Pedir matchmaking\n [4]:BUscar Partida\n");
       scanf("%s", selection);
       if (compareStrings(selection, "2")) {
         char * username = calloc(256, sizeof(char));
         printf("Elige un username\n");
         scanf("%s", username);
         requestMatchMaking(sockfd, username);
+      }
+
+      else if (compareStrings(selection, "4")){
+        send(sockfd, "4", 1024, 0);
+      }
+
+      else if (compareStrings(selection, "3")){
+        send(sockfd, "3", 1024, 0);
+      }
+
+      else {
+        send(sockfd, selection, 1024, 0);
       }
 
     }
