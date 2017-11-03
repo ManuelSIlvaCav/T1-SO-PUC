@@ -14,6 +14,9 @@
 pthread_mutex_t general_mutex;
 pthread_cond_t respond_game;
 
+int jugando= 0;
+int turno = 0;
+
 int mod(int a, int b){
   if (b < 0) return mod(a, -b);
   int ret =  a % b;
@@ -116,14 +119,16 @@ void* recieveMessage(void * client_socket){
     }
 
     else if (buffer[0] == 7){
-      //CASo de GameStart
-      printf("ID %c\n", buffer[3]);
-      char color = buffer[2];
+      //CASo de GameStart;
+      char color = buffer[3];
       char * string = malloc(sizeof(char)*3);
-      strncat(string, &buffer[3],1 );
+      strncat(string, &buffer[2],1 );
       strncat(string, &color, 1);
-      //printf("MENSAJE 7 %s\n", string);
+      printf("MENSAJE Respuesta Gamereq %d, %d\n", string[0], string[1]);
       send(sender, string, 1024, 0);
+      jugando = 1;
+      if (color == 0 ) turno = 1;
+      printf("Jugando %d, Turno %d", jugando, turno);
 
     }
     else if(buffer[0] == 13){
@@ -219,30 +224,45 @@ int main(int argc, char *argv[]){
     pthread_create(&tid[0], NULL, &recieveMessage, &sockfd);
 
     while (1) {
-      char* selection = malloc(sizeof(char));
-      printf("\n");
-      printf("Seleciona una opción\n");
-      printf("[2]: Pedir matchmaking\n [4]:BUscar Partida\n");
-      scanf("%s", selection);
-      if (compareStrings(selection, "2")) {
-        char * username = malloc(sizeof(char)*256);
-        printf("Elige un username\n");
-        scanf("%s", username);
-        requestMatchMaking(sockfd, username);
+      if (jugando){
+        printf("ENTRANDO A JUGAR \n");
+        if (turno){
+          char*jugada = malloc(sizeof(char)*5);
+          printf("Ingrese Jugada for Col inicial, fila inicial, col final, fila final");
+          scanf("%s", jugada);
+        }
+        else{
+          printf("Espere a su Oponente");
+          sleep(4);
+        }
       }
+      else{
+        char* selection = malloc(sizeof(char));
+        printf("\n");
+        printf("Seleciona una opción\n");
+        printf("[2]: Pedir matchmaking\n [4]:BUscar Partida\n");
+        scanf("%s", selection);
+        if (compareStrings(selection, "2")) {
+          char * username = malloc(sizeof(char)*256);
+          printf("Elige un username\n");
+          scanf("%s", username);
+          requestMatchMaking(sockfd, username);
+        }
 
-      else if (compareStrings(selection, "4")){
-        send(sockfd, "4", 1024, 0);
+        else if (compareStrings(selection, "4")){
+          send(sockfd, "4", 1024, 0);
+        }
+
+        else if (compareStrings(selection, "3")){
+          send(sockfd, "3", 1024, 0);
+        }
+
+        else {
+          send(sockfd, selection, 1024, 0);
+        }
+
       }
-
-      else if (compareStrings(selection, "3")){
-        send(sockfd, "3", 1024, 0);
-      }
-
-      else {
-        send(sockfd, selection, 1024, 0);
-      }
-
+      sleep(1);
     }
     return 0;
 

@@ -31,6 +31,13 @@ int mod(int a, int b){
   return ret;
 }
 
+void Move(char*move, wchar_t**board){
+  //colI, filI, colF, filF, identificador 1 y 2 ID y tamaño
+  board[move[5]][move[4]] = board[move[3]][move[2]];
+  board[move[3]][move[2]] = 0;
+
+}
+
 char*gamesyncboard(char*one_dimension_board){
   //Solo me interesan la posicion de las piezas
   int contador_piezas = 0;
@@ -276,6 +283,8 @@ void *TodosListen(void * client_socket){
            //Respuesta a GameStart
            recv(client, buffer, 1024, 0);
            jugando = 1;
+           
+
          }
          else {
             // Send user two signal
