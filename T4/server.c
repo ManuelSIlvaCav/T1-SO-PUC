@@ -17,12 +17,13 @@
 #define PORT 8080;
 #define IP "0.0.0.0"
 
-//Estrcutura para argumentos listeningstruc
-struct arg_listening{
-  int client_socket;
-  char ** UserArray;
-};
+//Estrcutura para argumentos listeningst
+char nicknames[1024][1024];
+int user_id[1024];
+int ret1;
+int respuesta = 0;
 
+pthread_mutex_t lock_4;
 
 int mod(int a, int b){
   if (b < 0) return mod(a, -b);
@@ -132,13 +133,7 @@ int challenging_player = 0;
 int respondiendo_game_start = 0;
 /* CURRENT USERS */
 
-char ** createUserArray() {
-  char **users = calloc(1024, sizeof(char*));
-  for (int i = 0; i < 1024; i++) {
-    users[i] = calloc(1, 256*sizeof(char));
-  }
-  return users;
-}
+
 
 int loggedUsers = 0;
 
@@ -149,22 +144,18 @@ void sendMessage(int socket, char* message){
 
 
 
-u_int16_t getId(char * username, char ** userArray) {
-  printf("Buscamos el ususario %s \n", username);
-  for (int i = 0; i < loggedUsers; i++) {
-    if (compareStrings(userArray[i], username)) {
-      return (u_int16_t)i;
-    }
+int getId(char * username) {
   }
-  strcpy(userArray[loggedUsers], username);
-  loggedUsers += 1;
-  printf("Asiganmos un nievo id: %d \n", loggedUsers);
-  return (u_int16_t)loggedUsers;
-}
 
-void responseMatchmaking(int sock, char * username, char ** userArray) {
-  u_int16_t id = getId(username, userArray);
-  printf("id: %d", id);
+
+
+
+void responseMatchmaking(int sock, char * username) {
+
+  user_id[loggedUsers] = sock;
+  strcpy(nicknames[loggedUsers], username);
+  loggedUsers++;
+
 }
 
 void BoardAuthority(char * one_dimension_board, int cliente){
@@ -184,6 +175,43 @@ void broadcast(wchar_t ** board, char * one_dimension_board, int player_one, int
   BoardAuthority(one_dimension_board, player_two);
 
   printf("\tSent board...\n");
+
+}
+
+void respondMatchList(int client){
+  char* string = malloc(sizeof(char)*(loggedUsers*1024));
+  char identi = 3;
+  string[0] = identi;
+  //payload = 4+ (2+1+var)*clientes
+  int largo = 4;
+  for(int i =0; i < loggedUsers; i++){
+    if (user_id[i] != client){
+      int len = strlen(nicknames[i]);
+      largo += (3 + len);
+    }
+  }
+  char clen = largo;
+  string[1] = clen;
+  char cantidad = loggedUsers-1;
+  string[2] = cantidad;
+  printf("LEN STRING ANTES %d", strlen(string));
+  int salto = 0;
+  int in = 2;
+  for(int i =0; i < loggedUsers; i++){
+    if (user_id[i] != client){
+      int len = strlen(nicknames[i]);
+      char id = user_id[i];
+      char len_nick = len;
+      string[3 + salto] = id;
+      string[4 + salto] = len_nick;
+      string[5 + salto ] = '\0';
+      strcat(string, nicknames[i]);
+      printf("LEN STRING post %d", strlen(string));
+      printf("string id: %d largonick %d, %s\n" ,string[3 + salto], string[4+salto], &string[5+salto]);
+      salto += (2+ len);
+    }
+  }
+  send(client, string, 1024, 0);
 
 }
 
@@ -251,123 +279,172 @@ void * game_room(void *client_socket){
 
 }
 
+void*DisconnetPack(int socket){
+  char * string = malloc(sizeof(char)*3);
+  int id = 9;
+  int payload = 1;
+  int resp = 0;
+  char id_char = id;
+  char char_pay = payload;
+  char ok = resp;
+  string[0] = id_char;
+  string[1] = char_pay;
+  string[2] = ok;
+  send(socket, string, 1024, 0);
+  sleep(1);
+  close(socket);
+}
+
+int find_index(int id){
+  for (int i = 0; i<loggedUsers; i++){
+    if (user_id[i] == id) return i;
+  }
+}
+
+
+void*SendRquest(char jugador, int quien_invita){
+  printf("Enviando invitacion a %d", jugador);
+  int id = 4;
+  int sock = jugador;
+  char * nick = nicknames[find_index(quien_invita)];
+  int len = strlen(nick);
+  //Se envia solicitud id 4 payload x ID + nick
+  char id_c = id;
+  char pay = len + 1;
+  char user_i = quien_invita;
+  char*string = malloc(sizeof(char)*(len+ 2+1));
+  string[0] = id_c;
+  string[1] = pay;
+  string[2] =user_i;
+  string[3] = '\0';
+  strcat(string, nick);
+  printf("Pirntando SendRequest %d, %d, %d, %s\n",string[0], string[1], string[2], &string[3]);
+  send(sock, string, 1024, 0);
+}
+
 void *TodosListen(void * client_socket){
   int client = *(int *)client_socket;
-  pthread_t t[2];
   int jugando = 0;
+  pthread_t t[1024];
   printf("Escuachando a %d \n", client);
   while(1) {
     char buffer[1024];
     // recieveMessage(client, buffer);
     printf("Esperando a %d\n", client);
     recv(client, buffer, 1024, 0);
-    printf("PRINTEAMOS BUFFER %s\n", buffer);
+    printf("PRINTEAMOS BUFFER %s, %d, %d\n", buffer, buffer[0], buffer[1]);
     char opcion = buffer[0];
-    if (jugando == 1){
+
+    if (opcion == 9){
+      //Disconnect
+      DisconnetPack(client);
+      pthread_exit(&ret1);
+
+    }
+    else if (jugando == 1){
 
     }
 
     else{
-      if (opcion == '2') {
-        printf("Response match\n");
-        //responseMatchmaking(client, &buffer[2], userArray);
+      if (opcion == 2) {
+
+        responseMatchmaking(client, &buffer[2]);
+        char * string = malloc(sizeof(char)*256);
+        char id_char = 2;
+        char tam = 2;
+        strncat(string, &id_char, 1);
+        strncat(string, &tam, 1);
+        char id_user = client;
+        strncat(string, &id_user, 1);
+        send(client, string, 1024, 0);
        }
+      if (opcion == 3){
+        //printf("SOLICITANDO LISTA JUGADORES\n");
+        respondMatchList(client);
+      }
 
-       //Gamestart
-       if (opcion == '4'){
-         printf("Buscando partida\n");
-         if (player_is_waiting == 0){
-           printf("Connected player listening,\n");
-           pthread_create(&t[0], NULL, &game_room, &client);
-           player_is_waiting = 1;
-           //Respuesta a GameStart
-           recv(client, buffer, 1024, 0);
-           jugando = 1;
-           
-
-         }
-         else {
-            // Send user two signal
-            printf("Connected player, joining game room... %d\n", client);
-            challenging_player = client;
-            pthread_cond_signal(&player_to_join);
+      if (opcion == 4){
+        //Viene la respuesta de la invitacion
+        printf("RESPUESTA INVITACION %d, %d, %d\n", buffer[0], buffer[1], buffer[2]);
+        if (buffer[2] == 1){
+          //Acepto jugaa
+          printf("Buscando partida\n");
+          if (player_is_waiting == 0){
+            printf("Connected player listening, %d\n", client);
+            pthread_create(&t[0], NULL, &game_room, &client);
+            player_is_waiting = 1;
             //Respuesta a GameStart
+            respuesta = 1;
             recv(client, buffer, 1024, 0);
             jugando = 1;
           }
+          else {
+             // Send user two signal
+             printf("Connected player, joining game room... %d\n", client);
+             challenging_player = client;
+             pthread_cond_signal(&player_to_join);
+             //Respuesta a GameStart
+             recv(client, buffer, 1024, 0);
+             jugando = 1;
+           }
+        }
+        else{
+          respuesta = -1;
+        }
+
+      }
+
+       if (opcion == 5){
+         //Lega una invitacion para JUGAR se reenvia la solicitud al otro jugador
+         printf("Reenviando solicitud\n");
+         SendRquest(buffer[2], client);
+         while(respuesta==0);
+         sleep(2);
+         printf("PASE SIN ESPERAR NADAAAA\n\n");
+         char idc = 5;
+         char pay = 1;
+         char r = respuesta;
+         char*string= malloc(sizeof(char)*3);
+         string[0] =idc;
+         string[1] = pay;
+         string[2] = r;
+         send(client, string, 1024, 0);
+         if (respuesta){
+           printf("Buscando partida\n");
+           if (player_is_waiting == 0){
+             printf("Connected player listening, %d\n", client);
+             pthread_create(&t[0], NULL, &game_room, &client);
+             player_is_waiting = 1;
+             //Respuesta a GameStart
+             recv(client, buffer, 1024, 0);
+             jugando = 1;
+           }
+           else {
+              // Send user two signal
+              printf("Connected player, joining game room... %d\n", client);
+              challenging_player = client;
+              pthread_cond_signal(&player_to_join);
+              //Respuesta a GameStart
+              recv(client, buffer, 1024, 0);
+              jugando = 1;
+            }
+         }
+         respuesta = 0;
+
+
 
        }
 
-       if(opcion == '3'){
-         //Test
-         printf("OPCION TEST\n");
-         GameStart(client, 0, 100);
-       }
     }
 
 
   }
 }
 
-void *generalListen(void * arguments) {
-  struct arg_listening *args = arguments;
-  pthread_t t[2];
-  int client = args->client_socket;
-  char ** userArray = args->UserArray;
-
-  printf("Escuachando a %d \n", client);
-  while(1) {
-    char buffer[1024];
-    // recieveMessage(client, buffer);
-    printf("Esperando a %d\n", client);
-    recv(client, buffer, 1024, 0);
-    printf("PRINTEAMOS BUFFER %s\n", buffer);
-    char opcion = buffer[0];
-
-
-    if (opcion == '2') {
-      printf("Response match\n");
-       responseMatchmaking(client, &buffer[2], userArray);
-     }
-
-     if (opcion == '4'){
-       printf("Buscando partida\n");
-       if (player_is_waiting == 0){
-         printf("Connected player listening,\n");
-         pthread_create(&t[0], NULL, &game_room, &client);
-         player_is_waiting = 1;
-         pthread_mutex_lock(&listening_mutex);
-         pthread_cond_wait(&respond_game_start, &listening_mutex);
-
-       }
-       else {
-          // Send user two signal
-          printf("Connected player, joining game room... %d\n", client);
-          challenging_player = client;
-          pthread_cond_signal(&player_to_join);
-
-          pthread_mutex_lock(&listening_mutex);
-          pthread_cond_wait(&respond_game_start, &listening_mutex);
-          printf("CONTINUO");
-        }
-     }
-
-     if(opcion == '3'){
-       //Test
-       printf("OPCION TEST\n");
-       GameStart(client, 0, 100);
-     }
-    sleep(1);
-  }
-}
-
-
-
-
-
 
 int main (int argc, char*argv[]){
-  pthread_t tid[2];
+  pthread_t tid[1024];
+  int i = 0;
 
   setlocale(LC_ALL, "en_US.UTF-8");
   int sockfd, client_socket, port_number, client_length;
@@ -406,14 +483,12 @@ int main (int argc, char*argv[]){
 
 
   /* MAX_QUEUE */
-  listen(sockfd, 5);
+  listen(sockfd, 10);
   printf("Server listening on port %d\n", port_number);
 
   /* LISTENING */
 
-  char ** userArray = createUserArray();
-  struct arg_listening list_args;
-  list_args.UserArray = userArray;
+
 
 
 
@@ -427,10 +502,11 @@ int main (int argc, char*argv[]){
      client_socket = accept(sockfd, (struct sockaddr *)&client, (unsigned int *)&client_length);
 
      //Lenamos la struct de listening
-     list_args.client_socket = client_socket;
+
 
      //pthread_create(&tid[1], NULL, &generalListen, &list_args);
-     pthread_create(&tid[1], NULL, &TodosListen, &client_socket);
+     pthread_create(&tid[i], NULL, &TodosListen, &client_socket);
+     i++;
      printf("– Connection accepted from %d at %d.%d.%d.%d:%d –\n", client_socket, client.sin_addr.s_addr&0xFF, (client.sin_addr.s_addr&0xFF00)>>8, (client.sin_addr.s_addr&0xFF0000)>>16, (client.sin_addr.s_addr&0xFF000000)>>24, client.sin_port);
 
      if (client_socket < 0) {

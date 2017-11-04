@@ -16,6 +16,9 @@ pthread_cond_t respond_game;
 
 int jugando= 0;
 int turno = 0;
+int sigue = 1;
+int ret;
+int responder_desafio = 0;
 
 int mod(int a, int b){
   if (b < 0) return mod(a, -b);
@@ -118,6 +121,35 @@ void* recieveMessage(void * client_socket){
       printf("Mensaje %s", buffer);
     }
 
+    else if (buffer[0] == 2){
+      printf("RECIBIENDO RESPUESTA DE MATCHMAKING %d %d\n", buffer[2], buffer[0]);
+    }
+    else if (buffer[0] == 3){
+      int len = buffer[2];
+      if (len == 0) printf("No hay Jugadores Disponibles\n" );
+      else{
+        printf("Lista Jugadores(%d):\n", len);
+        int salto = 0;
+        for (int i = 0; i < len; i++){
+          int len = buffer[4 + salto];
+          printf("Jugador - ");
+          for(int j = 0; j < len; j++) printf("%c", buffer[5+j + salto]);
+          printf(" Id: %d \n", buffer[3 + salto]);
+          salto  += (2 + len);
+          }
+
+
+      }
+    }
+
+    else if (buffer[0] == 4){
+      printf("LLEGANDO SOLICITUD\n");
+      printf("Jugador con Id %d y nick %s lo desafia\n", buffer[2], &buffer[3]);
+      printf("Acepta? Si(1) o No(2)\n");
+      responder_desafio = 1;
+
+
+    }
     else if (buffer[0] == 7){
       //CASo de GameStart;
       char color = buffer[3];
@@ -131,6 +163,13 @@ void* recieveMessage(void * client_socket){
       printf("Jugando %d, Turno %d", jugando, turno);
 
     }
+
+    else if (buffer[0] == 9){
+      printf("Desconectando\n");
+      close(sender);
+      sigue = 0;
+      pthread_exit(&ret);
+    }
     else if(buffer[0] == 13){
       printf("Enviandome BOARDAUTHORITY\n");
       //Recibo el arreglo de piezas ID13Tamano(color,col,fila,pieza)
@@ -138,7 +177,6 @@ void* recieveMessage(void * client_socket){
 
 
     }
-
     else if (buffer[0] == 16){
       printf("REIBO GAMEREQUEST ENVO GAMSYNC");
     }
@@ -146,9 +184,6 @@ void* recieveMessage(void * client_socket){
 
       printf("PRINTEAMOS Mensaje General %s", buffer);
     }
-
-    sleep(1);
-
   }
 
 }
@@ -162,12 +197,47 @@ void * requestMatchMaking(int sock, char * username) {
   string[0] = id;
   string[1] = c;
   string[2] = '\0';
+  username[len + 1] = '\0';
   strcat(string, username);
-  printf("Probamos el Print id: %d, len: %d, username: %s", string[0], string[1], &string[2]);
+  printf("Probamos el Print id: %d, len: %d\n", string[0], string[1]);
   int success = send(sock, string, 1024, 0);
   printf("MEnsaje enviado :%d\n", success);
 }
 
+void * MatchmakingList(int sock){
+  char * string = malloc(sizeof(char)*2);
+  string[0] = 3;
+  string[1] = 0;
+  printf("SOLICITIANDO LA LISTA JUGANDORES\n");
+  send(sock, string, 1024,0);
+
+}
+
+void * MatchRequest(int sock, int input){
+  //Invitar a jugar == 5
+  int id = 5;
+  int payload = 2;
+  char * string = malloc(sizeof(char)*4);
+  char id_c = id;
+  char p = payload;
+  char inp = input;
+  string[0] = id_c;
+  string[1] = p;
+  string[2] = input;
+  send(sock, string, 1024, 0);
+
+}
+
+void  *DisconnectServer(int sock){
+  char * string = malloc(sizeof(char)*2);
+  int id = 9;
+  int payload = 0;
+  char id_char = id;
+  char char_pay = payload;
+  string[0] = id_char;
+  string[1] = char_pay;
+  send(sock, string, 1024, 0);
+}
 
 int compareStrings(char *s1, char *s2) {
   return !strcmp(s1, s2);
@@ -178,7 +248,8 @@ int main(int argc, char *argv[]){
   int sockfd, portno, n;
   struct sockaddr_in serv_addr;
   struct hostent * server;
-
+  char * username = malloc(sizeof(char)*256);
+  int registrado = 0;
 
   pthread_mutex_init(&general_mutex, NULL);
   pthread_cond_init(&respond_game, NULL);
@@ -223,7 +294,10 @@ int main(int argc, char *argv[]){
     // printf("Connected player listening,\n");
     pthread_create(&tid[0], NULL, &recieveMessage, &sockfd);
 
-    while (1) {
+    while (sigue) {
+      if (!sigue){
+        exit(1);
+      }
       if (jugando){
         printf("ENTRANDO A JUGAR \n");
         if (turno){
@@ -237,26 +311,59 @@ int main(int argc, char *argv[]){
         }
       }
       else{
+
         char* selection = malloc(sizeof(char));
         printf("\n");
         printf("Seleciona una opción\n");
-        printf("[2]: Pedir matchmaking\n [4]:BUscar Partida\n");
+        printf("Si no esta registrado porfavor presione [2]: Matchmaking\n [3]: Lista Jugadores \n [4] Match Request\n [9] Disconnect\n");
         scanf("%s", selection);
         if (compareStrings(selection, "2")) {
-          char * username = malloc(sizeof(char)*256);
+
           printf("Elige un username\n");
           scanf("%s", username);
           requestMatchMaking(sockfd, username);
-        }
+          registrado = 1;
 
-        else if (compareStrings(selection, "4")){
-          send(sockfd, "4", 1024, 0);
+        }
+        else if (responder_desafio){
+          int id_r= 4;
+          int resp;
+          if (compareStrings(selection, "1")) resp = 1;
+          else resp=0;
+          char id = id_r;
+          char pay = 1;
+          char out = resp;
+          char * string = malloc(sizeof(char)*3);
+          string[0] = id;
+          string[1] = pay;
+          string[2] = out;
+          printf("Respondiendo %d, %d, %d", string[0], string[1], string[2]);
+          send(sockfd, string, 1024, 0);
         }
 
         else if (compareStrings(selection, "3")){
-          send(sockfd, "3", 1024, 0);
+          MatchmakingList(sockfd);
         }
 
+        else if (compareStrings(selection, "4")){
+          if (registrado){
+            int inp;
+            printf("Ingrese el ID del usuario a combatir -- Use Lista jugadores para ver Disponibles\n");
+            scanf("%d", &inp);
+            MatchRequest(sockfd, inp);
+          }
+          else {
+            printf("Porfavor registrese antes de continuar\n");
+            continue;
+          }
+
+
+        }
+
+        else if (compareStrings(selection, "9")){
+          DisconnectServer(sockfd);
+          sleep(1);
+        }
         else {
           send(sockfd, selection, 1024, 0);
         }
